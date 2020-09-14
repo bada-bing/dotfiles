@@ -1,0 +1,16 @@
+- defaults:
+    link:
+      relink: true
+
+- clean: ['~']
+
+- link:
+    ~/.zshrc: .zshrc
+
+- create:
+
+- shell:
+  - [git submodule update --init --recursive, Installing submodules]
+
+- link:
+    ~/.oh-my-zsh/custom/plugins/zsh-nvm: .oh-my-zsh/custom/plugins/zsh-nvm
