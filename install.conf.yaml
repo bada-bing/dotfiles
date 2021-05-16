@@ -4,11 +4,8 @@
 
 - clean: ['~']
 
-- link:
-    ~/.zshrc: .zshrc
-    ~/.tmux.conf: .tmux.conf
-
 - create:
+  - .local/share/fonts
 
 - shell:
   - 
@@ -21,8 +18,13 @@
   - [curl -s https://api.github.com/repos/starship/starship/releases/latest | grep browser_download_url | grep x86_64-unknown-linux-gnu | cut -d '"' -f 4 | wget -qi -, Downloading Starship]
   - [tar xvf starship-*.tar.gz, Extracting downloaded archive]
   - [sudo mv starship /usr/local/bin/; rm starship*, Installing Starship]
+  - [wget https://raw.githubusercontent.com/rupa/z/master/z.sh -O ~/z.sh, Installing z.sh]
+  - [sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)", Installing oh-my-zsh]
+  - [rm ~/.zshrc, Remove default config file installed by oh-my-zsh]
 
 - link:
+    ~/.zshrc: .zshrc
+    ~/.tmux.conf: .tmux.conf
     ~/.oh-my-zsh/custom/plugins/zsh-nvm: .oh-my-zsh/custom/plugins/zsh-nvm
     ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions: .oh-my-zsh/custom/plugins/zsh-autosuggestions
     ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting: .oh-my-zsh/custom/plugins/zsh-syntax-highlighting
