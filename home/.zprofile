@@ -9,5 +9,7 @@ export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 
 export GIT_CONFIG_GLOBAL="$XDG_CONFIG_HOME/git/.gitconfig"
 
+export DROPBOX_DIR="$HOME/Library/CloudStorage/Dropbox/"
+export TOOLBOX_BCK_DIR="$DROPBOX_DIR/toolbox/bck"
 eval "$(/opt/homebrew/bin/mise activate zsh --shims)"
 
