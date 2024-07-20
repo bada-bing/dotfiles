@@ -1,0 +1,17 @@
+alias lg=lazygit
+alias tn='~/src/scripts/tmux_sessionizer.sh'
+alias tks='tmux kill-server'
+alias ts='tmux kill-session'
+
+alias cph='history | tail -n 1 | cut -c 8- | pbcopy'
+
+# alias ls='exa -lah'
+alias vim=nvim
+
+###
+
+alias gst='git status'
+alias gpsh='git push'
+alias gpl='git pull'
+alias hgrep='history 1 | grep'
+alias szsh='source ~/.config/zsh/.zshrc'
