@@ -1,0 +1,52 @@
+gui:
+  # https://github.com/catppuccin/lazygit/blob/main/themes/macchiato/blue.yml
+  theme:
+    selectedLineBgColor:
+      - underline
+      - "#363a4f"
+    activeBorderColor:
+      - "#8aadf4"
+      - bold
+    inactiveBorderColor:
+      - "#a5adcb"
+    optionsTextColor:
+      - "#8aadf4"
+    # selectedRangeBgColor:
+    #   - "#363a4f"
+    cherryPickedCommitBgColor:
+      - "#494d64"
+    cherryPickedCommitFgColor:
+      - "#8aadf4"
+    unstagedChangesColor:
+      - "#ed8796"
+    defaultFgColor:
+      - "#cad3f5"
+    searchingActiveBorderColor:
+      - "#eed49f"
+  showRandomTip: true
+git:
+  paging:
+    colorArg: never
+    pager: delta --dark --paging=never
+    # useConfig: true (it uses default git config, which uses pager for delta which breaks lazygit display of git log of bigger commits)
+# os:
+#   openCommand: "code --goto -- {{filename}}:{{line}}"
+#   editCommand: "code"
+
+# https://github.com/jesseduffield/lazygit/wiki/Custom-Commands-Compendium#blame-via-tig
+customCommands:
+  - key: b
+    command: tig blame -- {{.SelectedFile.Name}}
+    context: files
+    description: blame file at tree
+    subprocess: true
+  - key: b
+    command: tig blame {{.SelectedSubCommit.Sha}} -- {{.SelectedCommitFile.Name}}
+    context: commitFiles
+    description: blame file at revision
+    subprocess: true
+  - key: B
+    command: tig blame -- {{.SelectedCommitFile.Name}}
+    context: commitFiles
+    description: blame file at tree
+    subprocess: true
