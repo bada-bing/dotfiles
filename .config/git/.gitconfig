@@ -1,0 +1,90 @@
+[core]
+  pager = delta
+	excludesfile = ~/.config/git/.gitignore_global
+	editor = nvim # editor = code --wait
+  logallrefupdates = true
+
+# [commit]
+# 	gpgSign = true
+
+[log]
+  abbrevcommit = true ; shorten the commit has when showing commit information
+
+[interactive]
+  diffFilter = delta --color-only
+
+[delta]
+  navigate = true # use n and N to move between diff sections
+  # side-by-side = true
+  line-numbers = true
+  syntax-theme = Solarized (dark)
+  # blame = true
+
+[diff]
+  colorMoved = default
+	# tool = sourcetree
+  tool = default-difftool #  tells Git to use its default diffing tool
+
+[difftool "default-difftool"]
+  cmd = code --wait --diff $LOCAL $REMOTE
+
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+
+[mergetool "sourcetree"]
+	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
+
+[alias]
+	p = push
+	pf = push --force-with-lease
+	# pp = pull
+	# ppf = pull --force
+	# f = fetch
+	# c = commit -m
+	# ca = commit --amend
+	# co = checkout
+	# s = status
+	# a = add
+	# r = rebase
+	# rc = rebase --continue
+	# ra = rebase --abort
+	# ras = rebase --autosquash -i
+	# rename = branch -m
+	# safe-clean = clean -xdf -e .idea -e .vscode
+
+[safe]
+	directory = ~/src
+
+; correctly match repositories with associated git credentials based on the url of remote
+[include]
+	path = ~/Library/CloudStorage/Dropbox/toolbox/bck/private.gitconfig
+
+
+[status]
+	showStash = true
+
+# [fetch]
+# 	prune = true
+
+[push]
+	autoSetupRemote = true
+
+; ################################
+
+# [format]
+# 	pretty = oneline
+# [gpg]
+# 	format = ssh
+
+# [maintenance]
+# 	strategy = incremental
+# [pull]
+# 	rebase = true
+
+# [rerere]
+# 	autoUpdate = true
+# 	enabled = true
+# [tag]
+# 	gpgSign = true
