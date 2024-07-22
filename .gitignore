@@ -1,0 +1,9 @@
+### zsh
+.config/zsh/.zcompdump
+.config/zsh/.zsh_history
+
+### lazygit
+.config/lazygit/state.yml
+
+### karabiner-elements
+.config/karabiner/automatic_backups
