@@ -1,0 +1,7 @@
+require "miki.keymaps"
+require "miki.plugins"
+require "miki.cmp"
+require "miki.telescope"
+require "miki.lsp"
+require "miki.options"
+require "miki.colorscheme"
