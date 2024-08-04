@@ -42,13 +42,27 @@ source $ZDOTDIR/.prompt.zsh
 eval "$(/opt/homebrew/bin/mise activate zsh)"
 
 # LOAD PLUGINS
-# source $ZDOTDIR/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# You need to clone them first
+# git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.zsh/plugins/zsh-syntax-highlighting
+# git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions
+source $ZDOTDIR/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source $ZDOTDIR/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# Bind the right arrow key to accept the current suggestion
+bindkey '^[[1;9' autosuggest-accept # cmd ->
+
+# Bind the tab key to accept the current suggestion completely
+bindkey '^[[C' forward-word # ->
+bindkey '^[[D' backward-word
+
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f '~/google-cloud-sdk/path.zsh.inc' ]; then . '~/google-cloud-sdk/path.zsh.inc'; fi
+# if [ -f '~/google-cloud-sdk/path.zsh.inc' ]; then . '~/google-cloud-sdk/path.zsh.inc'; fi
+source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
 
-# The next line enables shell coømmand completion for gcloud.
-if [ -f '~/google-cloud-sdk/completion.zsh.inc' ]; then . '~/google-cloud-sdk/completion.zsh.inc'; fi
+# # The next line enables shell coømmand completion for gcloud.
+# if [ -f '~/google-cloud-sdk/completion.zsh.inc' ]; then . '~/google-cloud-sdk/completion.zsh.inc'; fi
+source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
 
 # FZF & FD Commands (does not work properly on Mac)
 export FZF_DEFAULT_COMMAND="fd ." #  "." represents the "catch all" pattern (basically if I am not mistaken, it searches the current directory)
@@ -61,6 +75,7 @@ export PATH="~/src/scripts/tmux:$PATH"
 export PATH="/opt/homebrew/bin:$PATH"
 
 export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+
 # GCLOUD & KUBECTL
 SE_GKE_GCLOUD_AUTH_PLUGIN=True
 
