@@ -1,0 +1,61 @@
+# simple ping task to test ansible connection
+- name: Mac Development Workstation Playbook
+  hosts: remote_vm
+  # become: false  # Run tasks with elevated privileges (sudo)
+
+  tasks:
+    - name: ping localhost
+      ping:
+
+    # 0. ssh keys and connection
+    # 1. ⛔ set up xdg_config_home and other variables for zsh (this is done in .zshrc)
+    # 2. setup .zshrc and other dotfiles, e.g., zsh_history
+    # 3. copy Brewfile to target machine
+    # 4. setup yabai and skhd
+    # 5. set system settings (e.g., dock, finder, etc.)
+    # 6. configure - install vscode extensions
+    # 7. configure - raycast (import quicklinks and other)
+    # 8. install mac applications from store
+    # 9. install job related tools (e.g., fragment-dev-server) # should be a separate playbook
+    # 10. connect to gitlab and other services
+    # 11. clone relevant projects
+    # 12. copy other relevant files (e.g., pass db)
+
+    - name: Install homebrew and packages
+      include_role:
+        name: geerlingguy.mac.homebrew
+
+    # task to check if homebrew is installed
+    - name: Run command using OS default shell
+      ansible.builtin.shell:
+        cmd: "brew --version"
+        # executable: /bin/zsh
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/opt/homebrew/bin"
+      register: brew_version_output # Register the output to a variable
+
+    - name: Print output
+      ansible.builtin.debug:
+        var: brew_version_output.stdout # Print the standard output of the previous task
+
+    - name: Get PATH
+      ansible.builtin.shell:
+        cmd: "echo $PATH"
+        # executable: /bin/zsh
+      register: path_output # Register the output to a variable
+
+    - name: Print PATH
+      ansible.builtin.debug:
+        var: path_output.stdout # Print the standard output of the previous task
+
+
+    # - name: Copy Brewfile to target machine
+    #   copy:
+    #     src: /path/to/brewfile/Brewfile
+    #     dest: /tmp/Brewfile
+    #     mode: 0644  # Set the file permissions
+
+    # - name: Clean up temporary files
+    #   file:
+    #     path: /tmp/Brewfile
+    #     state: absent  # Remove the temporary Brewfile
