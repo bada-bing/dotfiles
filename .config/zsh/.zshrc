@@ -30,7 +30,7 @@ setopt appendhistory
 alias d='dirs -v'
 for index ({1..9}) alias "$index"="cd +${index}"; unset index
 source $XDG_CONFIG_HOME/.aliases
-source $TOOLBOX_BCK_DIR/work.aliases
+source $LOCAL_ENV_DIR/work.aliases
 
 # SSH VERSION WHICH SUPPORTS YUBIKEYS
 export PATH=$(brew --prefix openssh)/bin:$PATH
@@ -82,5 +82,5 @@ SE_GKE_GCLOUD_AUTH_PLUGIN=True
 FZF_CONFIG=$XDG_CONFIG_HOME/fzf/fzf.zsh
 
 [ -f "$FZF_CONFIG" ] && source "$FZF_CONFIG"
-source ~/src/scripts/npmr.sh
+source ~/src/scripts/node/pick_npm_script.sh
 source ~/src/scripts/git/checkout-branch.sh
