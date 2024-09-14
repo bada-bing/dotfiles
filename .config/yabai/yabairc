@@ -63,27 +63,38 @@ yabai -m config right_padding                02
 yabai -m config window_gap                   04
 
 # SPECIFIC SPACE LAYOUTS
-yabai -m space 1 --label web
-yabai -m space 2 --label obsidian
-yabai -m space 3 --label office
-# yabai -m space 3 --layout stack
+yabai -m space 1 --layout stack --label web
+yabai -m space 2 --label docs
+yabai -m space 3 --layout stack --label office
 yabai -m space 4 --label develop
 
 # RULES
 
-# Web browsers
-yabai -m rule --add app="^Brave$" border=off  layer=below
+# Charlie OS Utils
+yabai -m rule --add app="^Clockify Desktop$" sticky=on # manage=off
+yabai -m rule --add app="KeePassXC" sticky=on manage=off
+
+yabai -m rule --add app="^System Settings$" manage=off #  display=east
+yabai -m rule --add app="Terminal" manage=off # needs to be in float because of a weird behavior with multiple tabs
+
+
+# Web browsers SPACE 1
+# yabai -m rule --add app="^Brave$" border=off  layer=below
+yabai -m rule --add app="Floorp" space=^1
+yabai -m rule --add app="Arc" space=^1
 # yabai -m rule --add app="^(Google Chrome|Firefox)$" border=off space=^web 
 
-# Charlie OS Utils
-yabai -m rule --add app="^Clockify Desktop$" manage=off
-yabai -m rule --add app="^System Preferences$" manage=off
+# DOCUMENTATION SPACE 2
+yabai -m rule --add app="Logseq" space=^2
 
-# Development - Text editors
+# OFFICE SPACE 3 (Stack)
+yabai -m rule --add app="Teams" space=3 # manage=off
+yabai -m rule --add app="Slack" space=3 # manage=off
+yabai -m rule --add app="Mail" space=^3 # manage=off
+
+# Development - Text editors SPACE 4
 # Only one app per space needs borders
-yabai -m rule --add app="Code" border=off space=^4
-yabai -m rule --add app="Terminal" manage=off # needs to be in float because of a bug
-yabai -m rule --add app="Teams" manage=off # needs to be in float because of a bug
+yabai -m rule --add app="Code" space=^4
 
 # https://github.com/koekeishiya/yabai/issues/1622
 

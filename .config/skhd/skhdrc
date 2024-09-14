@@ -23,10 +23,28 @@
 # A REFERENCE ONLY, WHEN MAKING YOUR OWN CONFIGURATION..          #
 # ############################################################### #
 
+# ❗ prev and next are based on mission-control index
+# prev is not the same as recent (recent is dynamic)
+
+
 # Stackline
 # Focus window up/down in stack
-ctrl - n : yabai -m window --focus stack.next
-ctrl - p : yabai -m window --focus stack.prev
+# hyper - a : yabai -m space --focus 1 && yabai -m window --focus stack.next || yabai -m window --focus stack.first
+# hyper - z : yabai -m space --focus 1 && yabai -m window --focus stack.prev || yabai -m window --focus stack.last
+# 
+# hyper - s : yabai -m space --focus 3 && yabai -m window --focus stack.next || yabai -m window --focus stack.first
+# hyper - c : yabai -m space --focus 3 && yabai -m window --focus stack.prev || yabai -m window --focus stack.last
+hyper - a : yabai -m space --focus 1
+hyper - r : yabai -m space --focus 2
+hyper - s : yabai -m space --focus 3
+hyper - t : yabai -m space --focus 4
+
+# Hyper + Z to cycle to the next window in the current stack
+hyper - z : yabai -m window --focus stack.next || yabai -m window --focus stack.first
+
+# Hyper + C to cycle to the previous window in the current stack
+hyper - c : yabai -m window --focus stack.prev ||yabai -m window --focus stack.last
+
 
 # Add the active window  to the window or stack to the {direction}
 # Note that this only works when the active window does *not* already belong to a stack
@@ -38,10 +56,10 @@ cmd + ctrl - right : yabai -m window east --stack $(yabai -m query --windows --w
 
 # ================================Window settings================================
 # focus window
-hyper - h : yabai -m window --focus west
-hyper - j : yabai -m window --focus south
-hyper - k : yabai -m window --focus north
-hyper - l : yabai -m window --focus east
+# hyper - h : yabai -m window --focus west
+# hyper - j : yabai -m window --focus south
+# hyper - k : yabai -m window --focus north
+# hyper - l : yabai -m window --focus east
 
 # Swap managed window position
 shift + alt - h : yabai -m window --swap west
@@ -93,24 +111,21 @@ hyper - 7 : yabai -m space --focus 7
 hyper - 8 : yabai -m space --focus 8
 
 # fast focus desktop (planck ez)
-hyper - a : yabai -m space --focus 1
-hyper - r : yabai -m space --focus 2
-hyper - s : yabai -m space --focus 3
-hyper - t : yabai -m space --focus 4
-hyper - n : yabai -m space --focus 5
-hyper - e: yabai -m space --focus 6
+# hyper - a : yabai -m space --focus 1
+# hyper - r : yabai -m space --focus 2
+# hyper - s : yabai -m space --focus 3
+# hyper - t : yabai -m space --focus 4
+# hyper - n : yabai -m space --focus 5
+# hyper - e: yabai -m space --focus 6
 
 hyper - v: yabai -m window --display recent
-
-# hyper - i : yabai -m space --focus 7 # keepass is using it right now (09.11.22)
-# hyper - o : yabai -m space --focus 8
 
 # send window to desktop and follow focus
 # shift + cmd - z : yabai -m window --space next; yabai -m space --focus next
 # hyper - g : yabai -m window --space next; yabai -m space --focus next
 # shift + cmd - 2 : yabai -m window --space  2; yabai -m space --focus 2
 
-# focus display
+# focus display (monitor)
 # ❗ Move to next display is managed by RayCast!
 # ctrl + alt - z  : yabai -m display --focus prev
 # ctrl + alt - 3  : yabai -m display --focus 3
@@ -123,13 +138,13 @@ hyper - v: yabai -m window --display recent
 # shift + ctrl - a : yabai -m window --move rel:-20:0
 # shift + ctrl - s : yabai -m window --move rel:0:20
 
-# increase window size
-shift + alt - a : yabai -m window --resize left:-20:0
-shift + alt - w : yabai -m window --resize top:0:-20
-
+# increase window size (COMMANDS ARE WRONG, FIX before using)
+# hyper - right : yabai -m window --resize left:-20:0
+# hyper - up : yabai -m window --resize top:0:-20
+# 
 # decrease window size
-shift + cmd - s : yabai -m window --resize bottom:0:-20
-# shift + cmd - w : yabai -m window --resize top:0:20 # conflicts with macos native close window
+# hyper - down : yabai -m window --resize bottom:0:20
+# hyper - left : yabai -m window --resize top:0:20 # conflicts with macos native close window
 
 # set insertion point in focused container
 # ctrl + alt - h : yabai -m window --insert west
@@ -142,10 +157,15 @@ alt - d : yabai -m window --toggle zoom-fullscreen
 alt - e : yabai -m window --toggle split
 
 # float / unfloat window and center on screen
-# alt - t : yabai -m window --toggle float;\
-#           yabai -m window --grid 4:4:1:1:2:2
+alt - t : yabai -m window --toggle float;\
+          yabai -m window --grid 4:4:1:1:2:2
 
 # toggle sticky(+float), topmost, picture-in-picture
-# alt - p : yabai -m window --toggle sticky;\
-#           yabai -m window --toggle topmost;\
-#           yabai -m window --toggle pip
+alt - p : yabai -m window --toggle sticky;\
+          yabai -m window --toggle topmost;\
+          yabai -m window --toggle pip
+
+
+
+# Move current window to the previously focused space
+shift + alt + ctrl - v : yabai -m window --space recent
