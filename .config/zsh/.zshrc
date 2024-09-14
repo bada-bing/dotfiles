@@ -76,6 +76,8 @@ export PATH="/opt/homebrew/bin:$PATH"
 
 export USE_GKE_GCLOUD_AUTH_PLUGIN=True
 
+eval $(thefuck --alias)
+
 # GCLOUD & KUBECTL
 SE_GKE_GCLOUD_AUTH_PLUGIN=True
 

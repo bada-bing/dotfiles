@@ -3,9 +3,11 @@ alias tn='~/src/scripts/tmux_sessionizer.sh'
 alias tks='tmux kill-server'
 alias ts='tmux kill-session'
 
+alias cat=bat
+
 alias cph='history | tail -n 1 | cut -c 8- | pbcopy'
 
-# alias ls='exa -lah'
+alias ls='eza --all'
 alias vim=nvim
 
 ###
@@ -15,3 +17,5 @@ alias gpsh='git push'
 alias gpl='git pull'
 alias hgrep='history 1 | grep'
 alias szsh='source ~/.config/zsh/.zshrc'
+alias nn=pick_npm_script
+alias ff=fuck
