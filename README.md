@@ -3,10 +3,10 @@
 `stow -D -t ~/.config config` remove CONFIG symlinks
 
 
-IMPORTANT 2 folders and 1 file need to be manually sym-linked from LOCAL_ENV_DIR
-- `ln -s $LOCAL_ENV_DIR/tmuxinator ~/.config/tmuxinator`
+IMPORTANT 2 folders and 1 file need to be manually sym-linked from ENV_DIR
+- `ln -s $ENV_DIR/tmuxinator ~/.config/tmuxinator`
   - TODO hopefully there will be better solution once I create a generic tmuxinator project
-- `ln -s $LOCAL_ENV_DIR/mprocs ~/.config/mprocs`
-- `ln -s $LOCAL_ENV_DIR/mise.toml ~/.config/mise.toml`
+- `ln -s $ENV_DIR/mprocs ~/.config/mprocs`
+- `ln -s $ENV_DIR/mise.toml ~/.config/mise.toml`
 
 TODO should the name be config or .config (of the folder)
