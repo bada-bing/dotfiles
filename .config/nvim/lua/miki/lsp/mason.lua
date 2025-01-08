@@ -2,7 +2,7 @@ local servers = {
 	-- "sumneko_lua",
 	-- "pyright",
 	-- "jsonls",
-  "tsserver", -- typescript-language-server
+  "ts_ls",  -- typescript-language-server
   "clangd",
 }
 

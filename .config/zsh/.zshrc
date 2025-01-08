@@ -1,6 +1,7 @@
 # TEXT EDITORS
 export EDITOR="vim"
-export VISUAL="code"
+# export EDITOR="code -w" # -w is to wait untill you are done with editing
+export VISUAL="vim"
 
 # VI Mode
 bindkey -v
