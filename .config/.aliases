@@ -1,5 +1,5 @@
 alias lg=lazygit
-alias tn='~/src/scripts/tmux_sessionizer.sh'
+alias tn='~/src/scripts/local_development/tmux_sessionizer.sh'
 alias tks='tmux kill-server'
 alias ts='tmux kill-session'
 
@@ -10,12 +10,15 @@ alias cph='history | tail -n 1 | cut -c 8- | pbcopy'
 alias ls='eza --all'
 alias vim=nvim
 
-###
-
 alias gst='git status'
 alias gpsh='git push'
 alias gpl='git pull'
 alias hgrep='history 1 | grep'
 alias szsh='source ~/.config/zsh/.zshrc'
 alias nn=pick_npm_script
-alias ff=fuck
+
+alias sl='slumber -f "$(ls $DROPBOX_DIR/toolbox/tools/slumber | fzf --select-1 --exit-0)"'
+
+code_rev() {
+    ur-commit-mentor $1 $CLAUDE_API_KEY_REVIEW
+}
