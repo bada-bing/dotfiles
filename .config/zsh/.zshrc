@@ -3,10 +3,6 @@ export EDITOR="vim"
 # export EDITOR="code -w" # -w is to wait untill you are done with editing
 export VISUAL="vim"
 
-# VI Mode
-bindkey -v
-export KEYTIMEOUT=1
-
 # ZSH ENVIRONMENT VARIABLES
 # export HISTFILE="$ZDOTDIR/.zhistory" # For some reason does not work as expected
 export HISTSIZE=2000  # Maximum events for internal memory
@@ -35,6 +31,7 @@ source $ENV_DIR/work.aliases
 
 # SSH VERSION WHICH SUPPORTS YUBIKEYS
 export PATH=$(brew --prefix openssh)/bin:$PATH
+export GOPATH=/Users/miki/src/go
 
 # PROMPT
 source $ZDOTDIR/.prompt.zsh
@@ -42,20 +39,43 @@ source $ZDOTDIR/.prompt.zsh
 # Mise - Runmtime/Package Manager
 eval "$(/opt/homebrew/bin/mise activate zsh)"
 
+# The zsh-vi-mode plugin will auto execute this zvm_config function
+zvm_config() {
+  # Retrieve default cursor styles
+  #   local ncur=$(zvm_cursor_style $ZVM_NORMAL_MODE_CURSOR)
+  local ncur=$(zvm_cursor_style $ZVM_CURSOR_BLINKING_BLOCK)
+  local icur=$(zvm_cursor_style $ZVM_CURSOR_BLINKING_BEAM)
+
+  # Append your custom color for your cursor
+  ZVM_INSERT_MODE_CURSOR=$icur'\e\e]12;#FF6961\a'
+  ZVM_NORMAL_MODE_CURSOR=$ncur'\e\e]12;#77DD77\a'
+
+  # Always starting with insert mode for each command line
+  ZVM_LINE_INIT_MODE=$ZVM_MODE_INSERT
+}
+
 # LOAD PLUGINS
 # You need to clone them first
 # git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.zsh/plugins/zsh-syntax-highlighting
 # git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions
 source $ZDOTDIR/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source $ZDOTDIR/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+source $ZDOTDIR/plugins/zsh-vi-mode/zsh-vi-mode.zsh # better alternative to the default zsh's vi mode
 
-# Bind the right arrow key to accept the current suggestion
-bindkey '^[[1;9' autosuggest-accept # cmd ->
-
-# Bind the tab key to accept the current suggestion completely
-bindkey '^[[C' forward-word # ->
-bindkey '^[[D' backward-word
-
+function zsh_autosuggest_bindings() {
+    bindkey '^j' backward-word
+    bindkey '^f' forward-word
+    bindkey '^g' autosuggest-accept
+    
+    # TODO the arrow keys do not work reliably and have no patience to investigate now
+    # Bind the right arrow key to accept the current suggestion
+    # bindkey '^[[1;9' autosuggest-accept # cmd ->
+    # bindkey '^[[1;5C' forward-word # ctrl ->
+    # bindkey '^[[C' forward-word # ->
+    # bindkey '^[[1;6D' backward-word
+    # bindkey '^[[D' backward-word
+}
+zvm_after_init_commands+=(zsh_autosuggest_bindings)
 
 # The next line updates PATH for the Google Cloud SDK.
 # if [ -f '~/google-cloud-sdk/path.zsh.inc' ]; then . '~/google-cloud-sdk/path.zsh.inc'; fi
@@ -71,13 +91,7 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND="fd -t d . $HOME"
 
 # export PATH="/opt/homebrew/opt/python@3.10/bin:$PATH"
-export PATH="~/src/scripts:$PATH"
-export PATH="~/src/scripts/tmux:$PATH"
-export PATH="/opt/homebrew/bin:$PATH"
-
-export USE_GKE_GCLOUD_AUTH_PLUGIN=True
-
-eval $(thefuck --alias)
+export PATH="~/src/scripts:/opt/homebrew/bin:$GOPATH/bin:$HOME/.cargo/bin:$PATH"
 
 # GCLOUD & KUBECTL
 SE_GKE_GCLOUD_AUTH_PLUGIN=True
@@ -87,3 +101,15 @@ FZF_CONFIG=$XDG_CONFIG_HOME/fzf/fzf.zsh
 [ -f "$FZF_CONFIG" ] && source "$FZF_CONFIG"
 source ~/src/scripts/node/pick_npm_script.sh
 source ~/src/scripts/git/checkout_branch.sh
+
+eval "$(zoxide init zsh)"
+
+# yazi
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		builtin cd -- "$cwd"
+	fi
+	rm -f -- "$tmp"
+}

@@ -16,6 +16,3 @@ eval "$(/opt/homebrew/bin/mise activate zsh --shims)"
 
 # Added by OrbStack: command-line tools and integration
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :
-
-# Added by Toolbox App
-export PATH="$PATH:~/Library/Application Support/JetBrains/Toolbox/scripts"
