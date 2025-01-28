@@ -1,0 +1,8 @@
+font-size = 20
+font-feature = "liga"
+theme = tokyonight_night
+background-opacity = 0.96
+macos-titlebar-style = "hidden"
+
+keybind = global:cmd+shift+ctrl+alt+i=toggle_quick_terminal
+macos-option-as-alt = left
