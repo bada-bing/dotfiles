@@ -37,14 +37,15 @@ default=(
   padding_right=5
   icon.font="Hack Nerd Font:Bold:18.0"
   # icon.font="SF Pro:Bold:14.0"
-  label.font="Hack Nerd Font:Bold:18.0"
+  # sketchybar-app-font:Regular
+  label.font="SpaceMono Nerd Font:Regular:18.0"
   # label.font="SF Pro:Semibold:15.0"
   icon.color=$WHITE
   label.color=$WHITE
   icon.padding_left=4
   icon.padding_right=4
   label.padding_left=4
-  label.padding_right=10
+  label.padding_right=8
   background.color=$ITEM_BG_COLOR
   background.corner_radius=5
   background.height=24
@@ -106,15 +107,6 @@ sketchybar --add item clock right \
            --add item battery right \
            --set battery update_freq=120 script="$PLUGIN_DIR/battery.sh" \
            --subscribe battery system_woke power_source_change
-
-# sketchybar --add item jiraIssue center \
-#             --set jiraIssue background.color=$ACCENT_COLOR \
-#               icon.color=$BAR_COLOR \
-#               icon.font="sketchybar-app-font:Regular:18.0" \
-#               label.color=$BAR_COLOR \
-#               label.font="Hack Nerd Font:Bold:18.0" \
-#               update_freq=5 script="$PLUGIN_DIR/issueKey.sh" \
-#               display=1
 
 # sketchybar --add item logseq center \
 #            --set logseq background.color=$ACCENT_COLOR \
