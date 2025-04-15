@@ -1,43 +1,56 @@
 [core]
-  pager = delta
+  ; pager = delta
   excludesfile = ~/.config/git/.gitignore_global
-  editor = nvim # editor = code --wait
+  editor = nvim 
   logallrefupdates = true
 
-# [commit]
+[commit]
+  verbose = true
 # 	gpgSign = true
 
 [log]
   abbrevcommit = true ; shorten the commit has when showing commit information
 
+; [init]
+; 	defaultBranch = master
+
 [interactive]
-  diffFilter = delta --color-only
+  diffFilter = delta --color-only 
 
 [delta]
   navigate = true # use n and N to move between diff sections
-  # side-by-side = true
+  side-by-side = true
   line-numbers = true
   syntax-theme = Solarized (dark)
   # blame = true
 
 [diff]
-  colorMoved = default
-	# tool = sourcetree
-  tool = default-difftool #  tells Git to use its default diffing tool
+		colorMoved = plain ; show code movement in different colors then added and removed lines 
+  ; tool = default-difftool # use its default diffing tool ; not sure that this even works, compare with core.pager
+		algorithm = histogram
+		renames = true
+		mnemonicPrefix = true ; replaces a/ and b/ with i/, w/ and c/
+
+[difftool]
+  prompt = false
 
 [difftool "default-difftool"]
   cmd = code --wait --diff $LOCAL $REMOTE
 
-[difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
+[help]
+	autocorrect = prompt
 
-[mergetool "sourcetree"]
-	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true
+[merge]
+  diffstyle = diff3
+  conflictstyle = zdiff3 ; zealous diff3
+
+[rebase]
+  autosquash = true
+  autostash = true
+  updateRefs = true
 
 [alias]
-	p = push
+	# p = push
 	pf = push --force-with-lease
 	# pp = pull
 	# ppf = pull --force
@@ -45,12 +58,12 @@
 	# c = commit -m
 	# ca = commit --amend
 	# co = checkout
-	# s = status
+	st = status
 	# a = add
 	# r = rebase
 	# rc = rebase --continue
 	# ra = rebase --abort
-	# ras = rebase --autosquash -i
+	ras = rebase --autosquash -i
 	# rename = branch -m
 	# safe-clean = clean -xdf -e .idea -e .vscode
 
@@ -65,11 +78,18 @@
 [status]
 	showStash = true
 
-# [fetch]
-# 	prune = true
+[fetch]
+	prune = true
+	pruneTags = true
+	all = true ; updates from all remotes, not just the defualt, i.e., origin
+
+[tag]
+	; treating dotted version numbers as a series of integer values for sorting purposes
+	sort = version:refname
 
 [push]
 	autoSetupRemote = true
+	; followTags = true ; push all local tags every time you push something
 
 ; ################################
 
@@ -83,8 +103,9 @@
 # [pull]
 # 	rebase = true
 
-# [rerere]
-# 	autoUpdate = true
-# 	enabled = true
+[rerere]
+  autoUpdate = true
+  enabled = true
+
 # [tag]
 # 	gpgSign = true
