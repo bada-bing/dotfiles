@@ -56,49 +56,59 @@ yabai -m config mouse_drop_action            swap
 
 # GENERAL SPACE SETTINGS
 yabai -m config layout                       bsp # bsp stands for binary space partitioning
-yabai -m config top_padding                  02
-yabai -m config bottom_padding               02
-yabai -m config left_padding                 02
-yabai -m config right_padding                02
-yabai -m config window_gap                   04
+yabai -m config top_padding                  04
+yabai -m config bottom_padding               04
+yabai -m config left_padding                 04
+yabai -m config right_padding                04
+yabai -m config window_gap                   10
 
 # SPECIFIC SPACE LAYOUTS
-yabai -m space 1 --layout stack --label web
-yabai -m space 2 --label docs
-yabai -m space 3 --layout stack --label office
-yabai -m space 4 --label develop
+yabai -m space 1 --layout stack --label ops
+yabai -m space 2 --layout stack --label impl
+yabai -m space 3 --label other
 
 # RULES
 
 # Charlie OS Utils
-yabai -m rule --add app="^Clockify Desktop$" sticky=on # manage=off
-yabai -m rule --add app="KeePassXC" sticky=on manage=off
+yabai -m rule --add app="^Clockify Desktop$" sticky=on manage=off
+yabai -m rule --add app="^KeePassXC$" sticky=on manage=off
+yabai -m rule --add app="^System Settings$" sticky=on manage=off
+yabai -m rule --add app="^Notes$" sticky=on manage=off
+# yabai -m rule --add app="^Terminal$" sticky=on manage=off # needs to be in float because of a weird behavior with multiple tabs
+yabai -m rule --add app="^Jan$" sticky=on manage=off
 
-yabai -m rule --add app="^System Settings$" manage=off #  display=east
-yabai -m rule --add app="Terminal" manage=off # needs to be in float because of a weird behavior with multiple tabs
 
-
-# Web browsers SPACE 1
+# SPACE 1 (operations, administration)
 # yabai -m rule --add app="^Brave$" border=off  layer=below
-yabai -m rule --add app="Floorp" space=^1
 yabai -m rule --add app="Arc" space=^1
 # yabai -m rule --add app="^(Google Chrome|Firefox)$" border=off space=^web 
 
-# DOCUMENTATION SPACE 2
-yabai -m rule --add app="Logseq" space=^2
-
-# OFFICE SPACE 3 (Stack)
-yabai -m rule --add app="Teams" space=3 # manage=off
-yabai -m rule --add app="Slack" space=3 # manage=off
-yabai -m rule --add app="Mail" space=^3 # manage=off
-
-# Development - Text editors SPACE 4
-# Only one app per space needs borders
-yabai -m rule --add app="Code" space=^4
+#  SPACE 2 (implementation)
+# yabai -m rule --add app="Logseq" space=^2
+# yabai -m rule --add app="Obsidian" space=^2
 
 # https://github.com/koekeishiya/yabai/issues/1622
 
+yabai -m rule --add app="Ghostty" subrole="^AXFloatingWindow$" sticky=on manage=off mouse_follows_focus=off
+
+
 # yabai -m rule --add app="^Arc$" subrole='AXSystemDialog' manage=off mouse_follows_focus=off
 yabai -m rule --add subrole="^AXSystemDialog$" manage=off mouse_follows_focus=off
+
+# The following rules fix the weird bug for rendering windows of apllications which support the native macOS tabs
+# The fix 👇 makes the situation worse because it breaks the stack layout (and I need that fix only for tabs which I don't use)
+# yabai -m signal --add app='^Ghostty$' event=window_created action='yabai -m space --layout bsp'
+# yabai -m signal --add app='^Ghostty$' event=window_destroyed action='yabai -m space --layout bsp'
+
+yabai -m signal --add app='^Finder$' event=window_created action='yabai -m space --layout bsp'
+yabai -m signal --add app='^Finder$' event=window_destroyed action='yabai -m space --layout bsp'
+
+yabai -m signal --add app='^Terminal$' event=window_created action='yabai -m space --layout bsp'
+yabai -m signal --add app='^Terminal$' event=window_destroyed action='yabai -m space --layout bsp'
+
+# jankyborders
+# borders active_color=0xff7eae77 inactive_color=0xff494d64 width=8.0 & # the inactive color is invisible, maybe black?
+borders active_color=0xff5a9654 inactive_color=0xffb76666 width=10.0
+# borders active_color=0xff7eae77 inactive_color=0xffe6a8a8 width=6.0 & # the inactive color is pastel red
 
 echo "yabai configuration loaded.."
