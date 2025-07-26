@@ -4,6 +4,8 @@ require("config.settings")
 require("config.lsp")
 vim.cmd.colorscheme("tokyonight-moon")
 require('lualine').setup {}
+
+---@diagnostic disable-next-line: missing-fields
 require("noice").setup({
   lsp = {
     -- override markdown rendering so that **cmp** and other plugins use **Treesitter**

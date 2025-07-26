@@ -8,7 +8,6 @@ require("lspconfig").lua_ls.setup {}
 -- require("lazydev").setup({
 --   library = { plugins = { "nvim-treesitter", "nvim-lspconfig" }, types = true },
 -- })
--- require("lazydev").setup() {} end
 require('lazydev').setup {}
 
 -- Configure NeoVim to recognize jq files as jq filetype

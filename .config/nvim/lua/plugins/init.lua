@@ -19,7 +19,6 @@ return {
 		},
 		{
 				"ibhagwan/fzf-lua",
-				-- optional for icon support
 				dependencies = { "nvim-tree/nvim-web-devicons" },
 				-- or if using mini.icons/mini.nvim
 				-- dependencies = { "echasnovski/mini.icons" },
@@ -38,6 +37,17 @@ return {
 		"williamboman/mason.nvim",
 		"williamboman/mason-lspconfig.nvim",
 		"neovim/nvim-lspconfig",
+		{
+		  'nvim-treesitter/nvim-treesitter',
+		  build = ':TSUpdate',  -- auto-update parsers after install
+		  config = function()
+			require('nvim-treesitter.configs').setup {
+			  highlight = { enable = true },
+			  indent = { enable = true },
+			  ensure_installed = { "lua", "python", "javascript", "java", "typescript", "go" },
+			}
+		  end
+		},
 		{
 				"folke/noice.nvim",
 				event = "VeryLazy",
