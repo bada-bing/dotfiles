@@ -2,23 +2,30 @@ alias lg=lazygit
 alias tn='~/src/scripts/local_development/tmux_sessionizer.sh'
 alias tks='tmux kill-server'
 alias ts='tmux kill-session'
+alias ta='tmux attach'
 
+alias nn=pick_npm_script
 alias cat=bat
 
 alias cph='history | tail -n 1 | cut -c 8- | pbcopy'
 
 alias ls='eza --all'
 alias vim=nvim
-
+alias v.='nvim .'
+alias vdot='cd ~/dotfiles; nvim .'
 alias gst='git status'
 alias gpsh='git push'
 alias gpl='git pull'
-alias hgrep='history 1 | grep'
+
+alias ..='cd ..'
+alias ...='cd ../..'
+
+alias bu='brew update; brew outdated'
+alias buu='brew upgrade'
+alias wpr-utils='tmux new-session -d -s wpr-utils "mprocs -c /Users/miki/Library/CloudStorage/Dropbox/toolbox/env/mprocs/wpr-utils.yaml"'
 alias szsh='source ~/.config/zsh/.zshrc'
-alias nn=pick_npm_script
-
-alias sl='slumber -f "$(ls $DROPBOX_DIR/toolbox/tools/slumber | fzf --select-1 --exit-0)"'
-
+alias sl='slumber -f "$(slumber collections list | fzf --select-1 --exit-0)"'
+alias hgrep='history 1 | grep'
 code_rev() {
     ur-commit-mentor $1 $CLAUDE_API_KEY_REVIEW
 }
