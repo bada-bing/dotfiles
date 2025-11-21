@@ -25,10 +25,10 @@ gui:
       - "#eed49f"
   showRandomTip: true
 git:
-  paging:
-    colorArg: never
-    pager: delta --dark --paging=never
-    # useConfig: true (it uses default git config, which uses pager for delta which breaks lazygit display of git log of bigger commits)
+  pagers:
+    - colorArg: never
+      pager: delta --dark --paging=never
+      # useConfig: true (it uses default git config, which uses pager for delta which breaks lazygit display of git log of bigger commits)
 # os:
 #   openCommand: "code --goto -- {{filename}}:{{line}}"
 #   editCommand: "code"
@@ -39,14 +39,14 @@ customCommands:
     command: tig blame -- {{.SelectedFile.Name}}
     context: files
     description: blame file at tree
-    subprocess: true
+    output: terminal
   - key: b
     command: tig blame {{.SelectedSubCommit.Sha}} -- {{.SelectedCommitFile.Name}}
     context: commitFiles
     description: blame file at revision
-    subprocess: true
+    output: terminal
   - key: B
     command: tig blame -- {{.SelectedCommitFile.Name}}
     context: commitFiles
     description: blame file at tree
-    subprocess: true
+    output: terminal
