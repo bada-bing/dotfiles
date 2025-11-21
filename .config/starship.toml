@@ -1,0 +1,134 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """
+[░▒▓](#a3aed2)\
+[  ](bg:#a3aed2 fg:#090c0c)\
+[](bg:#769ff0 fg:#a3aed2)\
+$directory\
+[](fg:#769ff0 bg:#394260)\
+$git_branch\
+$git_state\
+$git_status\
+$git_commit\
+[](fg:#394260 bg:#212736)\
+$nodejs\
+$golang\
+$java\
+$python\
+[ ](fg:#1d2230)\
+$jobs\
+$fill\
+$kubernetes\
+$line_break\
+$status\
+$character"""
+
+right_format = ""
+continuation_prompt = "[∙](bright-black) "
+scan_timeout = 30
+command_timeout = 1000
+add_newline = false
+
+[directory]
+style = "fg:#e3e5e5 bg:#769ff0"
+format = "[ $path ]($style)"
+truncation_length = 5
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
+"shopping-profile-ui" = "spui"
+"cart-ui-next" = "cui-next"
+
+[git_branch]
+symbol = ""
+style = "bg:#394260"
+format = '[[ $symbol $branch ](fg:#769ff0 bg:#394260)]($style)'
+truncation_length = 20
+
+[git_state]
+rebase = "REBASING"
+merge = "MERGING"
+revert = "REVERTING"
+cherry_pick = "CHERRY-PICKING"
+bisect = "BISECTING"
+am = "AM"
+am_or_rebase = "AM/REBASE"
+style = "fg:#2ac3de bg:#394260"
+format = '[$state( $progress_current/$progress_total)]($style)'
+disabled = false
+
+[git_status]
+style = "bg:#394260"
+format = '[[($all_status$ahead_behind )](fg:#2ac3de bg:#394260)]($style)'
+
+[git_commit]
+commit_hash_length = 7
+style = "fg:#769ff0 bg:#394260"
+format = '[\($hash$tag\)]($style)'
+only_detached = true
+disabled = false
+tag_symbol = " 🏷 "
+tag_disabled = false
+tag_max_candidates = 0
+
+[nodejs]
+# symbol = ""
+style = "bg:#212736"
+format = '[[ $symbol($version)](fg:#7dcfff bg:#212736)]($style)'
+
+[golang]
+symbol = ""
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#7dcfff bg:#212736)]($style)'
+
+[java]
+symbol = " "
+style = "bg:#212736"
+format = '[[ $symbol($version)](fg:#7dcfff bg:#212736)]($style)'
+# overwrite default which shows java version also when there is a gradle file extension in root
+detect_extensions = []
+detect_folders = ['src/main/java']
+
+[kubernetes]
+disabled = false
+symbol = "⎈ "
+style = "bg:#89ddff"
+format = '[$symbol$context(\($namespace\))]($style) '
+contexts = [
+    { context_pattern = "minikube", context_alias = "mini", style = "cyan bold" },
+    { context_pattern = "gke_green-daisy_europe-west1-d_wescale-dev-v2", context_alias = "WESCALE-DEV", style = "yellow bold" },
+    { context_pattern = "gke_purple-tulip_europe-west1-d_wescale-test-v2", context_alias = "WESCALE-TEST ⚠️", style = "purple bold" },
+    { context_pattern = "gke_red-poppy_europe-west1-d_wescale-customer-dev-v2", context_alias = "WESCALE-CDEV ⚠️ ", style = "bright-red bold" },
+    { context_pattern = "gke_white-crocus_europe-west1-d_wescale-prod-v2", context_alias = "WESCALE-PROD ⚠️", style = "white bold inverted underline" },
+]
+
+# https://starship.rs/config/#character
+[character]
+success_symbol = '[❯](bold #769ff0)'
+vimcmd_symbol = '[❮](bold #769ff0)'
+format = "$symbol "
+
+[status]
+format = "[$symbol $status]($style) "
+symbol = ""
+success_symbol = ""
+not_executable_symbol = ":no_entry_sign:"
+not_found_symbol = ":mag:"
+sigint_symbol = ":bricks:"
+signal_symbol = ":zap:"
+style = "bold red"
+map_symbol = false
+recognize_signal_code = true
+pipestatus = false
+pipestatus_separator = "|"
+pipestatus_format = '\[$pipestatus\] => [$symbol$common_meaning$signal_name$maybe_int]($style)'
+disabled = false
+
+# #7aa2f7 - Main blue (bright, vibrant)
+# #7dcfff - Cyan (lighter, more aqua)
+# #2ac3de - Bright cyan
+# #89ddff - Light cyan/blue
