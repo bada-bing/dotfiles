@@ -1,8 +1,8 @@
 require("mason").setup()
 require("mason-lspconfig").setup()
 
--- After setting up mason-lspconfig you may set up servers via lspconfig
-require("lspconfig").lua_ls.setup {}
+-- After setting up mason-lspconfig you may set up servers via vim.lsp.config
+vim.lsp.config.lua_ls = {}
 
 -- Neodev setup for Lua environment
 -- require("lazydev").setup({
@@ -12,8 +12,8 @@ require('lazydev').setup {}
 
 -- Configure NeoVim to recognize jq files as jq filetype
 vim.cmd([[au BufRead,BufNewFile *.jq setfiletype jq]])
-require("lspconfig").jqls.setup {}
-require("lspconfig").jsonls.setup {}
+vim.lsp.config.jqls = {}
+vim.lsp.config.jsonls = {}
 
-require("lspconfig").gopls.setup {}
+vim.lsp.config.gopls = {}
 -- ...
