@@ -1,8 +1,17 @@
-font-size = 20
+font-size = 19
 font-feature = "liga"
-theme = tokyonight_night
-background-opacity = 0.96
-macos-titlebar-style = "hidden"
 
-keybind = global:cmd+shift+ctrl+alt+i=toggle_quick_terminal
+theme = "TokyoNight Night"
+background-opacity = 1.0
+
+macos-titlebar-style = "hidden"
 macos-option-as-alt = left
+
+confirm-close-surface = false
+
+# Drop to login shell after tmux exits
+command = /bin/bash -lc "~/.config/ghostty/attachTmux.sh; exec -l $SHELL"
+
+
+keybind = shift+enter=text:\x1b\r
+keybind = global:cmd+shift+ctrl+alt+i=toggle_quick_terminal
