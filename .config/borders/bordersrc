@@ -1,0 +1,11 @@
+#!/bin/bash
+
+options=(
+    style=round
+    width=4.0
+    hidpi=on
+    active_color="glow(0xffe1e3e4)"
+    whitelist="Electron,ghostty"
+)
+
+borders "${options[@]}"
