@@ -5,13 +5,14 @@ alias ts='tmux kill-session'
 alias ta='tmux attach'
 
 alias nn=pick_npm_script
+alias rmnm='rm -rf node_modules'
 alias cat=bat
-
+alias claude='DISABLE_AUTOUPDATER=1 claude'
 alias cph='history | tail -n 1 | cut -c 8- | pbcopy'
 
 alias ls='eza --all'
 alias vim=nvim
-alias v.='nvim .'
+alias vv='nvim .'
 alias vdot='cd ~/dotfiles; nvim .'
 alias gst='git status'
 alias gpsh='git push'
@@ -22,10 +23,11 @@ alias ...='cd ../..'
 
 alias bu='brew update; brew outdated'
 alias buu='brew upgrade'
-alias wpr-utils='tmux new-session -d -s wpr-utils "mprocs -c /Users/miki/Library/CloudStorage/Dropbox/toolbox/env/mprocs/wpr-utils.yaml"'
+
+alias wpr-utils='tmux new-session -d -s wpr-utils "mprocs -c /Users/miki/Documents/toolbox/env/mprocs/wpr-utils.yaml"'
 alias szsh='source ~/.config/zsh/.zshrc'
 alias sl='slumber -f "$(slumber collections list | fzf --select-1 --exit-0)"'
 alias hgrep='history 1 | grep'
-code_rev() {
-    ur-commit-mentor $1 $CLAUDE_API_KEY_REVIEW
-}
+
+alias ndx='git clean -ndX'
+alias fdx='git clean -fdX'
