@@ -72,7 +72,7 @@
 
 ; correctly match repositories with associated git credentials based on the url of remote
 [include]
-	path = ~/Library/CloudStorage/Dropbox/toolbox/env/private.gitconfig
+	path = ~/Documents/toolbox/env/private.gitconfig
 
 
 [status]

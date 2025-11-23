@@ -16,3 +16,8 @@
 ### nvim
 .config/nvim.lazy
 .config/nvim.bak
+
+### newsboat
+.config/newsboat/cache.db
+.config/newsboat/history.cmdline
+.config/newsboat/history.search
