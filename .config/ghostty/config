@@ -4,6 +4,8 @@ font-feature = "liga"
 theme = "TokyoNight Night"
 background-opacity = 1.0
 
+window-colorspace = display-p3
+
 macos-titlebar-style = "hidden"
 macos-option-as-alt = left
 
