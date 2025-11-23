@@ -1,12 +1,14 @@
 # TEXT EDITORS
-export EDITOR="vim"
+export EDITOR="nvim"
 # export EDITOR="code -w" # -w is to wait untill you are done with editing
-export VISUAL="vim"
+export VISUAL="nvim"
 
 # ZSH ENVIRONMENT VARIABLES
 # export HISTFILE="$ZDOTDIR/.zhistory" # For some reason does not work as expected
 export HISTSIZE=2000  # Maximum events for internal memory
 export SAVEHIST=10000 # Maximum events in history file
+
+export MANPAGER='nvim +Man!' # + ensures that the NeoVim will open the output of the Man command in a buffer, and ! is forcing the command to execute
 
 # ZSH OPTIONS
 setopt HIST_SAVE_NO_DUPS # Do not write duplicate event to the history file
@@ -31,12 +33,15 @@ source $ENV_DIR/work.aliases
 
 # SSH VERSION WHICH SUPPORTS YUBIKEYS
 export PATH=$(brew --prefix openssh)/bin:$PATH
+
+export PATH="/Applications/IntelliJ IDEA.app/Contents/MacOS:$PATH"
 export GOPATH=/Users/miki/src/go
 
 # PROMPT
-source $ZDOTDIR/.prompt.zsh
+# source $ZDOTDIR/.prompt.zsh
+eval "$(starship init zsh)"
 
-# Mise - Runmtime/Package Manager
+# Mise - Runmtime/Package Manager (this line is important to load env variables)
 eval "$(/opt/homebrew/bin/mise activate zsh)"
 
 # The zsh-vi-mode plugin will auto execute this zvm_config function
@@ -74,6 +79,10 @@ function zsh_autosuggest_bindings() {
     # bindkey '^[[C' forward-word # ->
     # bindkey '^[[1;6D' backward-word
     # bindkey '^[[D' backward-word
+
+    FZF_CONFIG=$XDG_CONFIG_HOME/fzf/fzf.zsh
+
+    [ -f "$FZF_CONFIG" ] && source "$FZF_CONFIG"
 }
 zvm_after_init_commands+=(zsh_autosuggest_bindings)
 
@@ -84,6 +93,7 @@ source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
 # # The next line enables shell coømmand completion for gcloud.
 # if [ -f '~/google-cloud-sdk/completion.zsh.inc' ]; then . '~/google-cloud-sdk/completion.zsh.inc'; fi
 source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
+source <(kubectl completion zsh) # https://kubernetes.io/docs/reference/kubectl/generated/kubectl_completion/
 
 # FZF & FD Commands (does not work properly on Mac)
 export FZF_DEFAULT_COMMAND="fd ." #  "." represents the "catch all" pattern (basically if I am not mistaken, it searches the current directory)
@@ -96,13 +106,11 @@ export PATH="~/src/scripts:/opt/homebrew/bin:$GOPATH/bin:$HOME/.cargo/bin:$PATH"
 # GCLOUD & KUBECTL
 SE_GKE_GCLOUD_AUTH_PLUGIN=True
 
-FZF_CONFIG=$XDG_CONFIG_HOME/fzf/fzf.zsh
-
-[ -f "$FZF_CONFIG" ] && source "$FZF_CONFIG"
-source ~/src/scripts/node/pick_npm_script.sh
+source ~/src/scripts/local_development/pick_npm_script.sh
 source ~/src/scripts/git/checkout_branch.sh
 
 eval "$(zoxide init zsh)"
+source <(COMPLETE=zsh slumber)
 
 # yazi
 function y() {
@@ -113,3 +121,14 @@ function y() {
 	fi
 	rm -f -- "$tmp"
 }
+
+# the first param is the repository with the group it belongs to, e.g., wpr/shopping-proifle-ui
+# the second and third params are the pointers (e.g., a branch or a tag)
+# the third param points to the "newer" version
+function gitlab-diff() {
+  # https://gitlab.wescale.io/wpr/cart-ui-next/-/compare/0.68.0...develop
+  open "https://gitlab.wescale.io/$1/-/compare/$2...$3"
+}
+
+source /Users/miki/.config/broot/launcher/bash/br
+export PATH="$HOME/.local/bin:$PATH"

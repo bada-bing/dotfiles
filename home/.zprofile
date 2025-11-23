@@ -9,10 +9,11 @@ export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 
 export GIT_CONFIG_GLOBAL="$XDG_CONFIG_HOME/git/.gitconfig"
 
-export DROPBOX_DIR="$HOME/Library/CloudStorage/Dropbox"
-export ENV_DIR="$DROPBOX_DIR/toolbox/env"
+export ICLOUD_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
+export DOCUMENTS_DIR="$HOME/Documents"
+export ENV_DIR="$DOCUMENTS_DIR/toolbox/env"
 
-eval "$(/opt/homebrew/bin/mise activate zsh --shims)"
+# eval "$(/opt/homebrew/bin/mise activate zsh --shims)"
 
 # Added by OrbStack: command-line tools and integration
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :
