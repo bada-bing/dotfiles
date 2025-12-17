@@ -54,7 +54,3 @@ tmux_set message-command-style "bg=${TN_BG_HIGHLIGHT},fg=${TN_FG}"
 
 # ===== COPY MODE =====
 tmux_set mode-style "bg=${TN_BLUE0},fg=${TN_FG}"
-
-# ===== CLOCK MODE =====
-# tmux_set clock-mode-colour "${TN_BLUE}"
-# tmux_set clock-mode-style 24
