@@ -5,9 +5,7 @@ alias ts='tmux kill-session'
 alias ta='tmux attach'
 
 alias nn=pick_npm_script
-alias rmnm='rm -rf node_modules'
 alias cat=bat
-alias claude='DISABLE_AUTOUPDATER=1 claude'
 alias cph='history | tail -n 1 | cut -c 8- | pbcopy'
 
 alias ls='eza --all'
@@ -31,3 +29,5 @@ alias hgrep='history 1 | grep'
 
 alias ndx='git clean -ndX'
 alias fdx='git clean -fdX'
+
+alias sws='~/src/scripts/dev-env/start_work_session.sh'
