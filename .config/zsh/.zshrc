@@ -20,6 +20,7 @@ bindkey "^[[B" history-beginning-search-forward
 
 ### Directory Stack
 setopt AUTO_PUSHD  # Push the current dir visited on the stack
+setopt AUTO_CD    # Does not require `cd` to switch location
 setopt PUSHD_IGNORE_DUPS # Do not store duplicates in the stack
 setopt PUSHD_SILENT # Do not print the directory stack after pushd or popd
 
