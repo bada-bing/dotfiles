@@ -125,15 +125,21 @@ alt-shift-ctrl-a = 'workspace 1'        # meh
 alt-shift-ctrl-r = 'workspace 2'
 alt-shift-ctrl-s = 'workspace 3'
 alt-shift-ctrl-t = 'workspace 4'
+alt-shift-ctrl-g = 'workspace 5'
 alt-shift-ctrl-left = 'workspace prev'
 alt-shift-ctrl-right = 'workspace next'
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
-alt-shift-1 = 'move-node-to-workspace 1'
-alt-shift-2 = 'move-node-to-workspace 2'
-alt-shift-3 = 'move-node-to-workspace 3'
-alt-shift-4 = 'move-node-to-workspace 4'
-alt-shift-5 = 'move-node-to-workspace 5'
+# alt-shift-1 = 'move-node-to-workspace 1'
+# alt-shift-2 = 'move-node-to-workspace 2'
+# alt-shift-3 = 'move-node-to-workspace 3'
+# alt-shift-4 = 'move-node-to-workspace 4'
+# alt-shift-5 = 'move-node-to-workspace 5'
+alt-shift-ctrl-z = 'move-node-to-workspace 1'
+alt-shift-ctrl-x = 'move-node-to-workspace 2'
+alt-shift-ctrl-c = 'move-node-to-workspace 3'
+alt-shift-ctrl-d = 'move-node-to-workspace 4'
+alt-shift-ctrl-v = 'move-node-to-workspace 5'
 
 # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
 alt-shift-ctrl-tab = 'workspace-back-and-forth'
