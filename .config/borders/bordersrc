@@ -2,10 +2,11 @@
 
 options=(
     style=round
-    width=4.0
+    width=5.0
     hidpi=on
     active_color="glow(0xffe1e3e4)"
-    whitelist="Electron,ghostty"
+    ax_focus=on
+    whitelist="Electron,ghostty,Logseq,RemNote"
 )
 
 borders "${options[@]}"
