@@ -18,3 +18,5 @@ export GIT_CONFIG_GLOBAL="$XDG_CONFIG_HOME/git/.gitconfig"
 
 # Added by OrbStack: command-line tools and integration
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :
+# Added by Obsidian
+export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"

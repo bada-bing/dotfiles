@@ -80,7 +80,7 @@
 
 [fetch]
 	prune = true
-	pruneTags = true
+	# pruneTags = true
 	all = true ; updates from all remotes, not just the defualt, i.e., origin
 
 [tag]

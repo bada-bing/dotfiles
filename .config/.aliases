@@ -8,7 +8,7 @@ alias nn=pick_npm_script
 alias cat=bat
 alias cph='history | tail -n 1 | cut -c 8- | pbcopy'
 
-alias ls='eza --all'
+alias ls='lsd -lah'
 alias vim=nvim
 alias vv='nvim .'
 alias vdot='cd ~/dotfiles; nvim .'
@@ -24,10 +24,16 @@ alias buu='brew upgrade'
 
 alias wpr-utils='tmux new-session -d -s wpr-utils "mprocs -c /Users/miki/Documents/toolbox/env/mprocs/wpr-utils.yaml"'
 alias szsh='source ~/.config/zsh/.zshrc'
-alias sl='slumber -f "$(slumber collections list | fzf --select-1 --exit-0)"'
 alias hgrep='history 1 | grep'
 
 alias ndx='git clean -ndX'
 alias fdx='git clean -fdX'
 
 alias sws='~/src/scripts/dev-env/start_work_session.sh'
+alias sss='~/src/scripts/dev-env/start_study_session.sh'
+
+wa-1() {
+    (cd /Users/miki/src/wa-1 && npm run start -- "$@")
+}
+
+alias gar-token='export NPM_TOKEN=$(gcloud auth print-access-token)'

@@ -111,7 +111,6 @@ source ~/src/scripts/local_development/pick_npm_script.sh
 source ~/src/scripts/git/checkout_branch.sh
 
 eval "$(zoxide init zsh)"
-source <(COMPLETE=zsh slumber)
 
 # yazi
 function y() {
@@ -133,3 +132,6 @@ function gitlab-diff() {
 
 source /Users/miki/.config/broot/launcher/bash/br
 export PATH="$HOME/.local/bin:$PATH"
+
+# Vite+ bin (https://viteplus.dev)
+. "$HOME/.vite-plus/env"
