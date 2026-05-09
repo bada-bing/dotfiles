@@ -7,6 +7,9 @@
 .config/zsh/.zsh_sessions
 .config/zsh/plugins
 
+### tmux
+.config/tmux/plugins
+
 ### lazygit
 .config/lazygit/state.yml
 
