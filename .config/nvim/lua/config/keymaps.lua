@@ -23,3 +23,7 @@ vim.keymap.set("i", "<C-L>", function()
         pcall(vim.api.nvim_win_set_cursor, 0, { row + 1, col })
     end
 end, { desc = "insjump" })
+
+-- Diagnostic keymaps
+vim.keymap.set("n", "<leader>e", function() vim.diagnostic.open_float() end, opts)
+vim.keymap.set("n", "<leader>q", vim.diagnostic.setqflist, opts)

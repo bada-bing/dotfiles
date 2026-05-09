@@ -5,4 +5,3 @@ vim.api.nvim_create_autocmd("BufWritePost", {
   command = "! (cd %:h && exercism test)",
   group = "AutoExercismTest",
 })
-
