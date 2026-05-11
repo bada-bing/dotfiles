@@ -131,11 +131,27 @@ setup_dotfiles() {
       exit 1
     fi
 
-    log "Stowing dotfiles."
-    (cd "$DOTFILES_DIR" && stow -S home && stow -S -t ~/.config .config) || { log "Failed to stow dotfiles."; exit 1; }
-    log "Dotfiles stowed successfully."
-  }
+    # An array to easily manage which directories to symlink from .config
+    local config_packages_to_stow=(
+      ghostty
+      git
+    )
 
+    if [ ${#config_packages_to_stow[@]} -gt 0 ]; then
+        log "Stowing specified .config directories: ${config_packages_to_stow[*]}"
+
+        for pkg in "${config_packages_to_stow[@]}"; do
+            # Use -R to restow, which is idempotent and safe.
+            # -d specifies the stow directory containing the packages.
+            # -t specifies the target directory for the symlinks.
+            stow -R -d "$DOTFILES_DIR/.config" -t "$HOME/.config" "$pkg"
+        done
+    else
+        log "No .config packages to stow."
+    fi
+
+    log "Selective dotfiles stowing complete."
+  }
   read -p "Enter your dotfiles repository (e.g., 'user/repo' for GitHub, or a full URL): " DOTFILES_INPUT
 
   if [ -n "$DOTFILES_INPUT" ]; then
