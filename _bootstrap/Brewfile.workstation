@@ -1,0 +1,7 @@
+cask "popclip"
+cask "keepassxc"
+cask "logseq"
+cask "raycast"
+cask "meetingbar"
+mas "StopTheMadness Pro", id: 6471380298
+mas "uBlock Origin Lite", id: 6745342698

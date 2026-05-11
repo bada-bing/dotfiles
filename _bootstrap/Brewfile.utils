@@ -1,0 +1,9 @@
+brew "wget"
+brew "bat"
+brew "fd"
+brew "lsd" # ls-deluxe
+brew "fzf"
+brew "jq"
+brew "zoxide"
+brew "yazi"
+brew "poppler" # PDF in yazi

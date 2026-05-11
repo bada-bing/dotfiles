@@ -1,0 +1,4 @@
+brew "mise"
+brew "stow"
+cask "orbstack"
+cask "tailscale-app"
