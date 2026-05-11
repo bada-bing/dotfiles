@@ -107,7 +107,8 @@ setup_dotfiles() {
 
   clone_or_update_dotfiles() {
     local DOTFILES_DIR=~/dotfiles
-    
+    local repo_url=$1 # It will receive the final URL
+
     if ! command -v git &> /dev/null; then
       log "Git not found. Please ensure git is in your Brewfile."
       exit 1
@@ -117,8 +118,8 @@ setup_dotfiles() {
       log "Dotfiles directory already exists. Pulling latest changes."
       (cd "$DOTFILES_DIR" && git pull) || { log "Failed to pull dotfiles updates."; exit 1; }
     else
-      log "Cloning dotfiles repository from $DOTFILES_URL."
-      git clone "$DOTFILES_URL" "$DOTFILES_DIR" || { log "Failed to clone dotfiles repository."; exit 1; }
+      log "Cloning dotfiles repository from $repo_url."
+      git clone "$repo_url" "$DOTFILES_DIR" || { log "Failed to clone dotfiles repository."; exit 1; }
     fi
   }
 
@@ -135,14 +136,50 @@ setup_dotfiles() {
     log "Dotfiles stowed successfully."
   }
 
-  read -p "Enter your dotfiles repository URL: " DOTFILES_URL
+  read -p "Enter your dotfiles repository (e.g., 'user/repo' for GitHub, or a full URL): " DOTFILES_INPUT
 
-  if [ -n "$DOTFILES_URL" ]; then
-    clone_or_update_dotfiles
+  if [ -n "$DOTFILES_INPUT" ]; then
+    local DOTFILES_URL
+    # If the input doesn't contain '://' or '@', assume it's a GitHub user/repo.
+    if [[ "$DOTFILES_INPUT" != *"://"* && "$DOTFILES_INPUT" != *"@"* ]]; then
+      DOTFILES_URL="https://github.com/$DOTFILES_INPUT.git"
+      log "Assuming GitHub repository: $DOTFILES_URL"
+    else
+      DOTFILES_URL="$DOTFILES_INPUT"
+    fi
+
+    clone_or_update_dotfiles "$DOTFILES_URL"
     symlink_dotfiles
     log "✅ finished dotfiles"
   else
-    log "No dotfiles repository URL provided. Skipping dotfiles setup."
+    log "No dotfiles repository provided. Skipping dotfiles setup."
+  fi
+}
+
+check_documents_setup() {
+  log "Checking Documents folder setup"
+
+  local DOCS_DIR="$HOME/Documents"
+  local TOOLBOX_ENV_DIR="$DOCS_DIR/toolbox/env"
+  local ICLOUD_BAK_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/BAK"
+
+  # Check if documents folder is NOT empty AND it contains the specific folder.
+  if [ -d "$DOCS_DIR" ] && [ "$(ls -A "$DOCS_DIR" 2>/dev/null)" ] && [ -d "$TOOLBOX_ENV_DIR" ]; then
+    log "✅ Documents folder appears to be set up."
+  else
+    if [ ! -d "$ICLOUD_BAK_DIR" ]; then
+        log "iCloud BAK folder not found at '$ICLOUD_BAK_DIR', cannot provide copy command."
+        read -p "Press Enter to continue the setup script..."
+        return
+    fi
+    
+    log "Your Documents folder may need to be restored from your iCloud backup."
+    echo "If it is empty or incomplete, you can run the following command in another terminal to restore it:"
+    echo
+    echo "mkdir -p \"$DOCS_DIR\""
+    echo "cp -a \"$ICLOUD_BAK_DIR/.\" \"$DOCS_DIR/\""
+    echo
+    read -p "After running the command (or if you want to skip), press Enter to continue the setup script..."
   fi
 }
 
@@ -154,6 +191,8 @@ if [ "$(uname -s)" != "Darwin" ]; then
 	exit 1
 fi
 
+check_documents_setup 
+# to pull private files from icloud (e.g., to ensure that git is configured)
 set_hostname
 set_macos_defaults
 setup_homebrew
