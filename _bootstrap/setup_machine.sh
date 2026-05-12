@@ -92,9 +92,7 @@ install_brew_packages() {
 create_xdg_directories() {
   log "Creating XDG (Cross-Desktop Group) directories"
   
-  # TODO seems that for macOS the `~/Library`` is better choice
-  # https://stackoverflow.com/questions/3373948/equivalents-of-xdg-config-home-and-xdg-data-home-on-mac-os-x
-
+  # related: https://stackoverflow.com/questions/3373948/equivalents-of-xdg-config-home-and-xdg-data-home-on-mac-os-x
   mkdir -p "$HOME/.config"
   mkdir -p "$HOME/.local/share"
   mkdir -p "$HOME/.cache"
@@ -125,6 +123,7 @@ setup_dotfiles() {
     fi
   }
 
+  # TODO symlink zprofile and zsh
   symlink_dotfiles() {
     local DOTFILES_DIR=~/dotfiles
 
@@ -143,10 +142,12 @@ setup_dotfiles() {
         log "Stowing specified .config directories: ${config_packages_to_stow[*]}"
 
         for pkg in "${config_packages_to_stow[@]}"; do
-            # Use -R to restow, which is idempotent and safe.
-            # -d specifies the stow directory containing the packages.
-            # -t specifies the target directory for the symlinks.
-            stow -R -d "$DOTFILES_DIR/.config" -t "$HOME/.config" "$pkg"
+            local target_path="$HOME/.config/$pkg"
+            if [ -e "$target_path" ] || [ -L "$target_path" ]; then
+              log "⚠️  Conflict: $target_path already exists. Exiting."
+              exit 1 # Exit the script on first conflict
+            fi
+            ln -s "$DOTFILES_DIR/.config/$pkg" "$target_path"
         done
     else
         log "No .config packages to stow."
@@ -192,6 +193,7 @@ bootstrap_documents_folder() {
     fi
     
     log "Documents folder should be restored from the iCloud backup."
+    # TODO message is confusing! Documents folder is there, but TOOLBOX is missing
     echo "Run the following command to restore it:"
     echo
     echo "mkdir -p \"$DOCS_DIR\""
