@@ -96,8 +96,10 @@ create_xdg_directories() {
   # https://stackoverflow.com/questions/3373948/equivalents-of-xdg-config-home-and-xdg-data-home-on-mac-os-x
 
   mkdir -p "$HOME/.config"
-  mkdir -p "$HOME/.config/local/share"
-  mkdir -p "$HOME/.config/cache"
+  mkdir -p "$HOME/.local/share"
+  mkdir -p "$HOME/.cache"
+
+  log "✅ XDG directories created."
 }
 
 # Function to set up dotfiles
@@ -172,7 +174,7 @@ setup_dotfiles() {
   fi
 }
 
-check_documents_setup() {
+bootstrap_documents_folder() {
   log "Checking Documents folder setup"
 
   local DOCS_DIR="$HOME/Documents"
@@ -189,8 +191,8 @@ check_documents_setup() {
         return
     fi
     
-    log "Your Documents folder may need to be restored from your iCloud backup."
-    echo "If it is empty or incomplete, you can run the following command in another terminal to restore it:"
+    log "Documents folder should be restored from the iCloud backup."
+    echo "Run the following command to restore it:"
     echo
     echo "mkdir -p \"$DOCS_DIR\""
     echo "cp -a \"$ICLOUD_BAK_DIR/.\" \"$DOCS_DIR/\""
@@ -207,8 +209,7 @@ if [ "$(uname -s)" != "Darwin" ]; then
 	exit 1
 fi
 
-check_documents_setup 
-# to pull private files from icloud (e.g., to ensure that git is configured)
+bootstrap_documents_folder # to pull private files from icloud (e.g., to ensure that git is configured)
 set_hostname
 set_macos_defaults
 setup_homebrew
