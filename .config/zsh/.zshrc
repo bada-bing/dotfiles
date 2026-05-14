@@ -32,9 +32,6 @@ for index ({1..9}) alias "$index"="cd +${index}"; unset index
 source $XDG_CONFIG_HOME/.aliases
 source $ENV_DIR/work.aliases
 
-# SSH VERSION WHICH SUPPORTS YUBIKEYS
-export PATH=$(brew --prefix openssh)/bin:$PATH
-
 export PATH="/Applications/IntelliJ IDEA.app/Contents/MacOS:$PATH"
 export GOPATH=/Users/miki/src/go
 
