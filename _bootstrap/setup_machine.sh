@@ -247,9 +247,8 @@ bootstrap_documents_folder() {
     log "✅ Documents folder appears to be set up."
   else
     if [ ! -d "$ICLOUD_BAK_DIR" ]; then
-        log "iCloud BAK folder not found at '$ICLOUD_BAK_DIR', cannot provide copy command."
-        read -p "Press Enter to continue the setup script..."
-        return
+        log "ERROR: iCloud BAK folder not found at '$ICLOUD_BAK_DIR'. Exiting."
+        exit 1
     fi
     
     log "The 'toolbox/env' directory is missing from your Documents folder. It should be restored from the iCloud backup."
@@ -260,6 +259,10 @@ bootstrap_documents_folder() {
     echo
     read -p "After running the command (or if you want to skip), press Enter to continue the setup script..."
   fi
+}
+
+configure_application_settings() {
+  log "Reminder: Import Raycast settings. The settings file is in your ~/Documents/toolbox/env/ folder."
 }
 
 # --- Main Execution ---
@@ -277,5 +280,6 @@ setup_homebrew
 install_brew_packages
 create_xdg_directories
 setup_dotfiles
+configure_application_settings
 
 log "✅ Bootstrap script completed successfully!"
