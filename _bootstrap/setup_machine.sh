@@ -74,6 +74,7 @@ install_brew_packages() {
     brew bundle --file="./Brewfile"
     brew bundle --file="./Brewfile.utils"
     brew bundle --file="./Brewfile.dev"
+    brew bundle --file="./Brewfile.workstation"
   else
     log "Brewfile not found in the current directory. Skipping brew bundle."
   fi
@@ -106,7 +107,7 @@ setup_dotfiles() {
     local DOTFILES_DIR=~/dotfiles
 
     if ! command -v stow &> /dev/null; then
-      log "Stow not found. Please ensure stow is in your Brewfile."
+      log "Stow not found. Ensure stow is in your Brewfile."
       exit 1
     fi
 
@@ -159,7 +160,7 @@ setup_dotfiles() {
   local DOTFILES_DIR=~/dotfiles
 
   if ! command -v git &> /dev/null; then
-    log "Git not found. Please ensure git is in your Brewfile."
+    log "Git not found. Ensure git is in your Brewfile."
     exit 1
   fi
 
@@ -251,7 +252,7 @@ if [ "$(uname -s)" != "Darwin" ]; then
 	exit 1
 fi
 
-bootstrap_documents_folder # to pull private files from icloud (e.g., to ensure that git is configured)
+bootstrap_documents_folder # pull private files from icloud (e.g., to ensure that git is configured)
 set_hostname
 set_macos_defaults
 setup_homebrew
