@@ -225,6 +225,25 @@ bootstrap_documents_folder() {
 
   # Check if documents folder is NOT empty AND it contains the specific folder.
   if [ -d "$DOCS_DIR" ] && [ "$(ls -A "$DOCS_DIR" 2>/dev/null)" ] && [ -d "$TOOLBOX_ENV_DIR" ]; then
+    # It is an explict decision to manually reconcile the difference between iCloud and Documents
+    local ICLOUD_TOOLBOX_ENV_DIR="$ICLOUD_BAK_DIR/toolbox/env"
+
+    if [ -d "$ICLOUD_TOOLBOX_ENV_DIR" ]; then
+      DOCS_TOOLBOX_SIZE=$(du -sh "$TOOLBOX_ENV_DIR" | awk '{print $1}')
+      ICLOUD_TOOLBOX_SIZE=$(du -sh "$ICLOUD_TOOLBOX_ENV_DIR" | awk '{print $1}')
+
+      if [ "$DOCS_TOOLBOX_SIZE" != "$ICLOUD_TOOLBOX_SIZE" ]; then
+        log "⚠️  Mismatch in toolbox/env directory size:"
+        log "   Documents/toolbox/env size: $DOCS_TOOLBOX_SIZE"
+        log "   iCloud BAK/toolbox/env size: $ICLOUD_TOOLBOX_SIZE"
+        log "Reconcile the differences manually. Exiting."
+        exit 1
+      else
+        log "✅ Documents/toolbox/env size matches iCloud BAK/toolbox/env size ($DOCS_TOOLBOX_SIZE)."
+      fi
+    else
+      log "⚠️  iCloud BAK/toolbox/env directory not found at '$ICLOUD_TOOLBOX_ENV_DIR'. Cannot compare sizes."
+    fi
     log "✅ Documents folder appears to be set up."
   else
     if [ ! -d "$ICLOUD_BAK_DIR" ]; then
@@ -233,8 +252,7 @@ bootstrap_documents_folder() {
         return
     fi
     
-    log "Documents folder should be restored from the iCloud backup."
-    # TODO message is confusing! Documents folder is there, but TOOLBOX is missing
+    log "The 'toolbox/env' directory is missing from your Documents folder. It should be restored from the iCloud backup."
     echo "Run the following command to restore it:"
     echo
     echo "mkdir -p \"$DOCS_DIR\""
