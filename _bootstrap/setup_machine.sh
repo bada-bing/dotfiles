@@ -350,7 +350,8 @@ bootstrap_documents_folder() {
 }
 
 configure_application_settings() {
-  log "Reminder: Import Raycast settings. The settings file is in your ~/Documents/toolbox/env/ folder."
+  log "Manually configure Application Settings. Search for 'Application Settings' in RemNote for the details."
+  read -p "Once you are done, press Enter to continue..."
 }
 
 # --- Main Execution ---
