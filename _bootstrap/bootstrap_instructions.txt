@@ -1,0 +1,12 @@
+# Instructions for bootstrapping your new macOS machine.
+#
+# 1. Log in to your Apple ID to enable iCloud Drive.
+# 2. Wait for iCloud Drive to sync this file.
+# 3. Execute the 'Bootstrap Command', and follow the prompts in the Terminal.
+
+# --- Bootstrap Command ---
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/bada-bing/dotfiles/main/_bootstrap/setup_machine.sh)"
+
+# --- GitHub Details ---
+GITHUB_USERNAME="bada-bing"
+DOTFILES_REPOSITORY="bada-bing/dotfiles"
