@@ -7,6 +7,94 @@ log() {
   echo "--- $1 ---"
 }
 
+ensure_github_ssh_access() {
+  log "Checking for GitHub SSH access"
+
+  local key_path="$HOME/.ssh/id_ed25519"
+  local new_key_generated=false
+
+  # Ensure .ssh directory exists
+  mkdir -p "$HOME/.ssh"
+  chmod 700 "$HOME/.ssh"
+
+  if [ ! -f "$key_path" ]; then
+    log "No SSH key found. Generating a new one."
+    read -p "Enter your GitHub email address: " user_email
+    
+    if [ -z "$user_email" ]; then
+      log "Email address cannot be empty. Exiting."
+      exit 1
+    fi
+
+    local passphrase=""
+    while true; do
+      read -s -p "Enter a passphrase for your new SSH key (leave empty for no passphrase): " passphrase
+      echo
+      if [ -z "$passphrase" ]; then
+        log "Creating key without a passphrase."
+        break
+      fi
+      read -s -p "Confirm passphrase: " passphrase_confirm
+      echo
+      if [ "$passphrase" = "$passphrase_confirm" ]; then
+        log "Passphrase confirmed."
+        break
+      else
+        log "⚠️ Passphrases do not match. Please try again."
+      fi
+    done
+
+    ssh-keygen -t ed25519 -C "$user_email" -f "$key_path" -N "$passphrase"
+    new_key_generated=true
+    
+    log "New SSH key generated."
+  else
+    log "Existing SSH key found at $key_path."
+  fi
+
+  log "Ensuring ssh-agent is running and key is added to keychain..."
+  # The `ssh-add -l` command will return a non-zero exit code if the agent is not running.
+  if ! ssh-add -l &> /dev/null; then
+    log "ssh-agent not running. Starting a new one for this script session..."
+    eval "$(ssh-agent -s)"
+  fi
+
+  # Add the key to the agent if it's not already loaded.
+  # We check for the key's filename in the output of ssh-add -l.
+  if ! ssh-add -l | grep -q "id_ed25519"; then
+    log "Adding SSH identity to the agent..."
+    ssh-add --apple-use-keychain "$key_path"
+  else
+    log "SSH identity is already loaded in the agent."
+  fi
+
+  if [ "$new_key_generated" = true ]; then
+    pbcopy < "${key_path}.pub"
+    log "Your new public SSH key has been copied to the clipboard."
+    log "Please add it to your GitHub account."
+    echo
+    log "1. Open your browser and go to https://github.com/settings/keys"
+    log "2. Click on 'New SSH key'."
+    log "3. Set a title (e.g., '$(scutil --get LocalHostName)')."
+    log "4. Paste the key from your clipboard into the 'Key' field."
+    log "5. Click 'Add SSH key'."
+  else
+    log "Please ensure your existing SSH key is added to your GitHub account."
+  fi
+  
+  echo
+  read -p "Press Enter to continue once your SSH key is configured on GitHub."
+
+  log "Verifying SSH connection to GitHub..."
+  # Use -o StrictHostKeyChecking=accept-new to automatically add GitHub's host key
+  # The 2>&1 redirects stderr to stdout to grep the success message
+  if ssh -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+    log "✅ GitHub SSH connection successful."
+  else
+    log "⚠️  Could not verify GitHub SSH connection. The script will continue, but you may face issues with private repositories."
+  fi
+}
+
 set_hostname() {
   log "Setting hostname"
   CURRENT_HOSTNAME=$(scutil --get LocalHostName)
@@ -274,6 +362,7 @@ if [ "$(uname -s)" != "Darwin" ]; then
 fi
 
 bootstrap_documents_folder # pull private files from icloud (e.g., to ensure that git is configured)
+ensure_github_ssh_access
 set_hostname
 set_macos_defaults
 setup_homebrew
