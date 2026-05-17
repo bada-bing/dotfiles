@@ -9,6 +9,9 @@ C_GREEN="\033[0;32m"
 C_YELLOW="\033[1;33m"
 C_RESET="\033[0m"
 
+# --- Path Constants ---
+BOOTSTRAP_DIR="$HOME/dotfiles/_bootstrap"
+
 header() {
   echo -e "
 ${C_BLUE}--- ${1} ---${C_RESET}"
@@ -155,7 +158,7 @@ set_hostname() {
 set_macos_defaults() {
   header "Setting macOS defaults"
 
-  DEFAULTS_FILE="./macos_defaults.list" # Assuming script is run from _bootstrap
+  DEFAULTS_FILE="$BOOTSTRAP_DIR/macos_defaults.list"
 
   if [ -f "$DEFAULTS_FILE" ]; then
     while IFS= read -r line; do
@@ -199,11 +202,11 @@ setup_homebrew() {
 
 install_homebrew_packages() {
   header "Installing Homebrew packages from Brewfile"
-  if [ -f "./Brewfile" ]; then
-    brew bundle --file="./Brewfile"
-    brew bundle --file="./Brewfile.utils"
-    brew bundle --file="./Brewfile.dev"
-    brew bundle --file="./Brewfile.workstation"
+  if [ -f "$BOOTSTRAP_DIR/Brewfile" ]; then
+    brew bundle --file="$BOOTSTRAP_DIR/Brewfile"
+    brew bundle --file="$BOOTSTRAP_DIR/Brewfile.utils"
+    brew bundle --file="$BOOTSTRAP_DIR/Brewfile.dev"
+    brew bundle --file="$BOOTSTRAP_DIR/Brewfile.workstation"
   else
     info "Brewfile not found in the current directory. Skipping brew bundle."
   fi
@@ -408,9 +411,9 @@ bootstrap_env_folder # pull private files from icloud (e.g., git configuration)
 ensure_github_ssh_access
 set_hostname
 setup_homebrew
+setup_dotfiles
 install_homebrew_packages
 create_xdg_directories
-setup_dotfiles
 set_macos_defaults
 configure_application_settings
 
