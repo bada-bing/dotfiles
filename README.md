@@ -1,12 +1,8 @@
 # dotfiles
 
-## Bootstrapping
+## Machine Setup Procedure
 
-To set up a new macOS machine, run the bootstrap script from the dotfiles directory. The script is idempotent, meaning it can be run multiple times safely.
-
-```sh
-./_bootstrap/setup_machine.sh
-```
+For instructions on setting up a macOS machine, refer to the [Machine Setup Procedure in `_bootstrap/README.md`](./_bootstrap/README.md).
 
 ---
 
