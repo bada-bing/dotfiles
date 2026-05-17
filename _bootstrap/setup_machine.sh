@@ -3,12 +3,48 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-log() {
-  echo "--- $1 ---"
+# --- Logging functions ---
+C_BLUE="\033[1;34m"
+C_GREEN="\033[0;32m"
+C_YELLOW="\033[1;33m"
+C_RESET="\033[0m"
+
+header() {
+  echo -e "
+${C_BLUE}--- ${1} ---${C_RESET}"
+}
+
+info() {
+  echo -e "  • ${1}"
+}
+
+success() {
+  echo -e "  ${C_GREEN}✓${C_RESET} ${1}"
+}
+
+warn() {
+    echo -e "  ${C_YELLOW}✗${C_RESET} ${1}"
+}
+
+prompt() {
+  # The space after the prompt is intentional for better readability
+  read -p "  _ ${1} " "${@:2}"
+}
+
+prompt_secret() {
+  read -s -p "  _ ${1} " "${@:2}"
+}
+
+print_ssh_key_instructions() {
+  info "1. Open your browser and go to https://github.com/settings/keys"
+  info "2. Click on 'New SSH key'."
+  info "3. Set a title (e.g., '$(scutil --get LocalHostName)')."
+  info "4. Paste the key from your clipboard into the 'Key' field."
+  info "5. Click 'Add SSH key'."
 }
 
 ensure_github_ssh_access() {
-  log "Checking for GitHub SSH access"
+  header "Checking for GitHub SSH access"
 
   local key_path="$HOME/.ssh/id_ed25519"
   local new_key_generated=false
@@ -18,102 +54,106 @@ ensure_github_ssh_access() {
   chmod 700 "$HOME/.ssh"
 
   if [ ! -f "$key_path" ]; then
-    log "No SSH key found. Generating a new one."
-    read -p "Enter your GitHub email address: " user_email
+    info "No SSH key found. Generating a new one."
+    prompt "Enter your GitHub email address:" user_email
     
     if [ -z "$user_email" ]; then
-      log "Email address cannot be empty. Exiting."
+      warn "Email address cannot be empty. Exiting."
       exit 1
     fi
 
     local passphrase=""
     while true; do
-      read -s -p "Enter a passphrase for your new SSH key (leave empty for no passphrase): " passphrase
+      prompt_secret "Enter a passphrase for your new SSH key (leave empty for no passphrase):" passphrase
       echo
       if [ -z "$passphrase" ]; then
-        log "Creating key without a passphrase."
+        info "Creating key without a passphrase."
         break
       fi
-      read -s -p "Confirm passphrase: " passphrase_confirm
+      prompt_secret "Confirm passphrase:" passphrase_confirm
       echo
       if [ "$passphrase" = "$passphrase_confirm" ]; then
-        log "Passphrase confirmed."
+        info "Passphrase confirmed."
         break
       else
-        log "⚠️ Passphrases do not match. Please try again."
+        warn "Passphrases do not match. Please try again."
       fi
     done
 
     ssh-keygen -t ed25519 -C "$user_email" -f "$key_path" -N "$passphrase"
     new_key_generated=true
     
-    log "New SSH key generated."
+    success "New SSH key generated."
   else
-    log "Existing SSH key found at $key_path."
+    info "Existing SSH key found at $key_path."
   fi
 
-  log "Ensuring ssh-agent is running and key is added to keychain..."
+  info "Ensuring ssh-agent is running and key is added to keychain..."
   # The `ssh-add -l` command will return a non-zero exit code if the agent is not running.
   if ! ssh-add -l &> /dev/null; then
-    log "ssh-agent not running. Starting a new one for this script session..."
+    info "ssh-agent not running. Starting a new one for this script session..."
     eval "$(ssh-agent -s)"
   fi
 
   # Add the key to the agent if it's not already loaded.
   # We check for the key's filename in the output of ssh-add -l.
   if ! ssh-add -l | grep -q "id_ed25519"; then
-    log "Adding SSH identity to the agent..."
+    info "Adding SSH identity to the agent..."
     ssh-add --apple-use-keychain "$key_path"
   else
-    log "SSH identity is already loaded in the agent."
+    info "SSH identity is already loaded in the agent."
   fi
 
   if [ "$new_key_generated" = true ]; then
     pbcopy < "${key_path}.pub"
-    log "Your new public SSH key has been copied to the clipboard."
-    log "Please add it to your GitHub account."
+    success "Your new public SSH key has been copied to the clipboard."
+    info "Add key to your GitHub account."
     echo
-    log "1. Open your browser and go to https://github.com/settings/keys"
-    log "2. Click on 'New SSH key'."
-    log "3. Set a title (e.g., '$(scutil --get LocalHostName)')."
-    log "4. Paste the key from your clipboard into the 'Key' field."
-    log "5. Click 'Add SSH key'."
+    print_ssh_key_instructions
   else
-    log "Please ensure your existing SSH key is added to your GitHub account."
+    info "Script assumes existing SSH key is already on GitHub account. If not, add it to your GitHub account."
+    prompt "Need a reminder on how to add it? [y/N] " -n 1 -r REPLY
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      info "You can copy your public key to the clipboard by running:"
+      info "cat ~/.ssh/id_ed25519.pub | pbcopy"
+      echo
+      print_ssh_key_instructions
+    fi
   fi
   
   echo
-  read -p "Press Enter to continue once your SSH key is configured on GitHub."
+  prompt "Press Enter to continue once your SSH key is configured on GitHub."
 
-  log "Verifying SSH connection to GitHub..."
+  info "Verifying SSH connection to GitHub..."
   # Use -o StrictHostKeyChecking=accept-new to automatically add GitHub's host key
   # The 2>&1 redirects stderr to stdout to grep the success message
   if ssh -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
-    log "✅ GitHub SSH connection successful."
+    success "GitHub SSH connection successful."
   else
-    log "⚠️  Could not verify GitHub SSH connection. The script will continue, but you may face issues with private repositories."
+    warn "Could not verify GitHub SSH connection. The script will continue, but you may face issues with private repositories."
   fi
 }
 
 set_hostname() {
-  log "Setting hostname"
+  header "Setting hostname"
   CURRENT_HOSTNAME=$(scutil --get LocalHostName)
-  log "Current hostname is $CURRENT_HOSTNAME"
-  read -p "Enter new hostname (leave blank to keep current): " NEW_HOSTNAME
+  info "Current hostname is $CURRENT_HOSTNAME"
+  prompt "Enter new hostname (leave blank to keep current):" NEW_HOSTNAME
 
   if [ -n "$NEW_HOSTNAME" ] && [ "$NEW_HOSTNAME" != "$CURRENT_HOSTNAME" ]; then
-    log "Setting hostname to $NEW_HOSTNAME"
+    info "Setting hostname to $NEW_HOSTNAME"
     sudo scutil --set LocalHostName "$NEW_HOSTNAME"
     sudo scutil --set ComputerName "$NEW_HOSTNAME"
     sudo scutil --set HostName "$NEW_HOSTNAME"
-    log "✅ Hostname set to $CURRENT_HOSTNAME"
+    success "Hostname set to $NEW_HOSTNAME"
   else
-    log "✅ Hostname remains $CURRENT_HOSTNAME"
+    success "Hostname remains $CURRENT_HOSTNAME"
   fi
 }
 
 set_macos_defaults() {
-  log "Setting macOS defaults"
+  header "Setting macOS defaults"
 
   DEFAULTS_FILE="./macos_defaults.list" # Assuming script is run from _bootstrap
 
@@ -125,7 +165,7 @@ set_macos_defaults() {
       fi
     done < "$DEFAULTS_FILE"
   else
-    log "❓ Defaults file not found: $DEFAULTS_FILE"
+    warn "Defaults file not found: $DEFAULTS_FILE"
   fi
 
   # Kill affected applications to apply changes
@@ -133,69 +173,70 @@ set_macos_defaults() {
     killall "$app" &> /dev/null
   done
 
-  log "✅ finished macOS defaults"
+  success "Finished macOS defaults"
 }
 
 setup_homebrew() {
-  log "Setting up Homebrew"
+  header "Setting up Homebrew"
 
-  # Check for Homebrew and install if we don't have it
+  # Check for Homebrew and install it if necessary
   if ! command -v brew &> /dev/null; then
-    log "Installing Homebrew"
+    info "Installing Homebrew"
+    # The brew installation script takes care of Xcode Command Line Tools (CLT)
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   
     # Ensure Homebrew is in the PATH for the current script execution
     eval "$(/opt/homebrew/bin/brew shellenv)"
 
   else
-    log "Homebrew is already installed. Updating"
+    info "Homebrew is already installed. Updating"
     # TODO do I need to update? should I also upgrade?
     brew update
   fi
 
-  log "✅ Homebrew setup complete"
+  success "Homebrew setup complete"
 }
 
-install_brew_packages() {
-  log "Installing Homebrew packages from Brewfile"
+install_homebrew_packages() {
+  header "Installing Homebrew packages from Brewfile"
   if [ -f "./Brewfile" ]; then
     brew bundle --file="./Brewfile"
     brew bundle --file="./Brewfile.utils"
     brew bundle --file="./Brewfile.dev"
     brew bundle --file="./Brewfile.workstation"
   else
-    log "Brewfile not found in the current directory. Skipping brew bundle."
+    info "Brewfile not found in the current directory. Skipping brew bundle."
   fi
-  log "Homebrew package installation complete"
+  success "Homebrew package installation complete"
 }
 
 create_xdg_directories() {
-  log "Creating XDG (Cross-Desktop Group) directories"
+  header "Creating XDG (Cross-Desktop Group) directories"
 
   # related: https://stackoverflow.com/questions/3373948/equivalents-of-xdg-config-home-and-xdg-data-home-on-mac-os-x
   for dir in "$HOME/.config" "$HOME/.local/share" "$HOME/.cache"; do
     if [ -d "$dir" ]; then
-      log "Directory $dir already exists."
+      info "Directory $dir already exists."
     else
       mkdir -p "$dir"
-      log "Created directory $dir."
+      info "Created directory $dir."
     fi
   done
 
-  log "✅ XDG directories check complete."
+  success "XDG directories check complete."
 }
 
 # Function to set up dotfiles
 # Clone dotfiles and run stow
 setup_dotfiles() {
-  log "Setting up dotfiles"
+  header "Setting up dotfiles"
 
   # TODO symlink zprofile and zsh
   symlink_dotfiles() {
     local DOTFILES_DIR=~/dotfiles
 
     if ! command -v stow &> /dev/null; then
-      log "Stow not found. Ensure stow is in your Brewfile."
+      warn "Stow not found. Ensure stow is in your Brewfile."
       exit 1
     fi
 
@@ -208,7 +249,7 @@ setup_dotfiles() {
     )
 
     if [ ${#config_packages_to_stow[@]} -gt 0 ]; then
-        log "Stowing specified .config directories: ${config_packages_to_stow[*]}"
+        info "Stowing specified .config directories: ${config_packages_to_stow[*]}"
 
         for pkg in "${config_packages_to_stow[@]}"; do
             local source_path="$DOTFILES_DIR/.config/$pkg"
@@ -223,40 +264,40 @@ setup_dotfiles() {
                 local expected_relative_path="../dotfiles/.config/$pkg"
 
                 if [ "$link_content" = "$source_path" ] || [ "$link_content" = "$expected_relative_path" ]; then
-                    log "✅ Symlink for '$pkg' already exists and is correct."
+                    success "Symlink for '$pkg' already exists and is correct."
                 else
-                    log "⚠️  Conflict: '$target_path' is a symlink. It points to '$link_content', but should point to '$source_path' (absolute) or '$expected_relative_path' (relative). Exiting."
+                    warn "Conflict: '$target_path' is a symlink. It points to '$link_content', but should point to '$source_path' (absolute) or '$expected_relative_path' (relative). Exiting."
                     exit 1
                 fi
             elif [ -e "$target_path" ]; then
                 # It is a file or directory.
-                log "⚠️  Conflict: '$target_path' already exists and is not a symlink. Exiting."
+                warn "Conflict: '$target_path' already exists and is not a symlink. Exiting."
                 exit 1
             else
                 # It does not exist. Create it.
                 ln -s "$source_path" "$target_path"
-                log "✅ Symlink for '$pkg' created."
+                success "Symlink for '$pkg' created."
             fi
         done
     else
-        log "No .config packages to stow."
+        info "No .config packages to stow."
     fi
 
-    log "Selective dotfiles stowing complete."
+    success "Selective dotfiles stowing complete."
   }
 
   local DOTFILES_DIR=~/dotfiles
 
   if ! command -v git &> /dev/null; then
-    log "Git not found. Ensure git is in your Brewfile."
+    warn "Git not found. Ensure git is in your Brewfile."
     exit 1
   fi
 
   if [ -d "$DOTFILES_DIR" ]; then
-    log "Dotfiles directory '$DOTFILES_DIR' already exists. Pulling latest changes."
-    (cd "$DOTFILES_DIR" && git pull) || { log "Failed to pull dotfiles updates."; exit 1; }
+    info "Dotfiles directory '$DOTFILES_DIR' already exists. Pulling latest changes."
+    (cd "$DOTFILES_DIR" && git pull) || { warn "Failed to pull dotfiles updates."; exit 1; }
   else
-    log "Dotfiles directory not found. Cloning repository."
+    info "Dotfiles directory not found. Cloning repository."
     
     local suggested_repo=""
     # This suggestion logic is based on the script's location.
@@ -273,39 +314,39 @@ setup_dotfiles() {
 
     local DOTFILES_INPUT=""
     if [ -n "$suggested_repo" ]; then
-        read -p "Use '$suggested_repo' as your dotfiles repository? [Y/n] " -n 1 -r
+        prompt "Use '$suggested_repo' as your dotfiles repository? [Y/n]" -n 1 -r
         echo
         if [[ $REPLY =~ ^[Nn]$ ]]; then
-            read -p "Enter your dotfiles repository: " DOTFILES_INPUT
+            prompt "Enter your dotfiles repository:" DOTFILES_INPUT
         else
             DOTFILES_INPUT="$suggested_repo"
         fi
     else
-        read -p "Enter your dotfiles repository: " DOTFILES_INPUT
+        prompt "Enter your dotfiles repository:" DOTFILES_INPUT
     fi
 
     if [ -n "$DOTFILES_INPUT" ]; then
         local DOTFILES_URL
         if [[ "$DOTFILES_INPUT" != *"://"* && "$DOTFILES_INPUT" != *"@"* ]]; then
             DOTFILES_URL="https://github.com/$DOTFILES_INPUT.git"
-            log "Assuming GitHub repository: $DOTFILES_URL"
+            info "Assuming GitHub repository: $DOTFILES_URL"
         else
             DOTFILES_URL="$DOTFILES_INPUT"
         fi
-        log "Cloning dotfiles repository from $DOTFILES_URL."
-        git clone "$DOTFILES_URL" "$DOTFILES_DIR" || { log "Failed to clone dotfiles repository."; exit 1; }
+        info "Cloning dotfiles repository from $DOTFILES_URL."
+        git clone "$DOTFILES_URL" "$DOTFILES_DIR" || { warn "Failed to clone dotfiles repository."; exit 1; }
     else
-        log "No dotfiles repository provided. Skipping dotfiles setup."
+        info "No dotfiles repository provided. Skipping dotfiles setup."
         return
     fi
   fi
   
   symlink_dotfiles
-  log "✅ finished dotfiles"
+  success "Finished dotfiles setup"
 }
 
-bootstrap_documents_folder() {
-  log "Checking Documents folder setup"
+bootstrap_env_folder() {
+  header "Checking Documents folder setup"
 
   local DOCS_DIR="$HOME/Documents"
   local TOOLBOX_ENV_DIR="$DOCS_DIR/toolbox/env"
@@ -321,55 +362,56 @@ bootstrap_documents_folder() {
       ICLOUD_TOOLBOX_SIZE=$(du -sh "$ICLOUD_TOOLBOX_ENV_DIR" | awk '{print $1}')
 
       if [ "$DOCS_TOOLBOX_SIZE" != "$ICLOUD_TOOLBOX_SIZE" ]; then
-        log "⚠️  Mismatch in toolbox/env directory size:"
-        log "   Documents/toolbox/env size: $DOCS_TOOLBOX_SIZE"
-        log "   iCloud BAK/toolbox/env size: $ICLOUD_TOOLBOX_SIZE"
-        log "Reconcile the differences manually. Exiting."
+        warn "Mismatch in toolbox/env directory size:"
+        info "   Documents/toolbox/env size: $DOCS_TOOLBOX_SIZE"
+        info "   iCloud BAK/toolbox/env size: $ICLOUD_TOOLBOX_SIZE"
+        warn "Reconcile the differences manually. Exiting."
         exit 1
       else
-        log "✅ Documents/toolbox/env size matches iCloud BAK/toolbox/env size ($DOCS_TOOLBOX_SIZE)."
+        success "Documents/toolbox/env size matches iCloud BAK/toolbox/env size ($DOCS_TOOLBOX_SIZE)."
       fi
     else
-      log "⚠️  iCloud BAK/toolbox/env directory not found at '$ICLOUD_TOOLBOX_ENV_DIR'. Cannot compare sizes."
+      warn "iCloud BAK/toolbox/env directory not found at '$ICLOUD_TOOLBOX_ENV_DIR'. Cannot compare sizes."
     fi
-    log "✅ Documents folder appears to be set up."
+    success "Documents folder appears to be set up."
   else
     if [ ! -d "$ICLOUD_BAK_DIR" ]; then
-        log "ERROR: iCloud BAK folder not found at '$ICLOUD_BAK_DIR'. Exiting."
+        warn "iCloud BAK folder not found at '$ICLOUD_BAK_DIR'. Exiting."
         exit 1
     fi
     
-    log "The 'toolbox/env' directory is missing from your Documents folder. It should be restored from the iCloud backup."
+    info "The 'toolbox/env' directory is missing from your Documents folder. It should be restored from the iCloud backup."
     echo "Run the following command to restore it:"
     echo
-    echo "mkdir -p \"$DOCS_DIR\""
-    echo "cp -a \"$ICLOUD_BAK_DIR/.\" \"$DOCS_DIR/\""
+    echo "mkdir -p "$DOCS_DIR""
+    echo "cp -a "$ICLOUD_BAK_DIR/." "$DOCS_DIR/""
     echo
-    read -p "After running the command (or if you want to skip), press Enter to continue the setup script..."
+    prompt "After running the command (or if you want to skip), press Enter to continue the setup script..."
   fi
 }
 
 configure_application_settings() {
-  log "Manually configure Application Settings. Search for 'Application Settings' in RemNote for the details."
-  read -p "Once you are done, press Enter to continue..."
+  header "Manual Action Required: Configure Application Settings"
+  info "Search for 'Application Settings' in RemNote for the details."
+  prompt "Once you are done, press Enter to continue..."
 }
 
 # --- Main Execution ---
 
 # Ensure the OS is a macOS
 if [ "$(uname -s)" != "Darwin" ]; then
-	log "This script is only for macOS"
+	warn "This script is only for macOS"
 	exit 1
 fi
 
-bootstrap_documents_folder # pull private files from icloud (e.g., to ensure that git is configured)
+bootstrap_env_folder # pull private files from icloud (e.g., git configuration)
 ensure_github_ssh_access
 set_hostname
-set_macos_defaults
 setup_homebrew
-install_brew_packages
+install_homebrew_packages
 create_xdg_directories
 setup_dotfiles
+set_macos_defaults
 configure_application_settings
 
-log "✅ Bootstrap script completed successfully!"
+success "Bootstrap script completed successfully!"
