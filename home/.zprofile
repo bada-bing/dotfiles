@@ -11,7 +11,6 @@ export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 export ICLOUD_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
 export DOCUMENTS_DIR="$HOME/Documents"
 export ENV_DIR="$DOCUMENTS_DIR/toolbox/env"
-export LS_DIR="$DOCUMENTS_DIR/Logseq/KB"
 
 # CONFIGURATION LOCATIONS
 export GIT_CONFIG_GLOBAL="$XDG_CONFIG_HOME/git/.gitconfig"
