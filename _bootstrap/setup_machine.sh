@@ -13,8 +13,7 @@ C_RESET="\033[0m"
 BOOTSTRAP_DIR="$HOME/dotfiles/_bootstrap"
 
 header() {
-  echo -e "
-${C_BLUE}--- ${1} ---${C_RESET}"
+  echo -e " ${C_BLUE}--- ${1} ---${C_RESET}"
 }
 
 info() {
@@ -140,43 +139,49 @@ ensure_github_ssh_access() {
 
 set_hostname() {
   header "Setting hostname"
-  CURRENT_HOSTNAME=$(scutil --get LocalHostName)
-  info "Current hostname is $CURRENT_HOSTNAME"
+
+  local computer_name=$(scutil --get ComputerName)
+  local local_host_name=$(scutil --get LocalHostName)
+  local host_name=$(scutil --get HostName)
+
+  if [ "$computer_name" != "$local_host_name" ] || [ "$local_host_name" != "$host_name" ]; then
+    warn "Hostname inconsistency detected:"
+    info "  ComputerName:  $computer_name"
+    info "  LocalHostName: $local_host_name"
+    info "  HostName:      $host_name"
+    info "Enter a new name to ensure that they are consistent."
+  else
+    info "Current hostname is $local_host_name"
+  fi
   prompt "Enter new hostname (leave blank to keep current):" NEW_HOSTNAME
 
-  if [ -n "$NEW_HOSTNAME" ] && [ "$NEW_HOSTNAME" != "$CURRENT_HOSTNAME" ]; then
+  if [ -n "$NEW_HOSTNAME" ]; then
     info "Setting hostname to $NEW_HOSTNAME"
     sudo scutil --set LocalHostName "$NEW_HOSTNAME"
     sudo scutil --set ComputerName "$NEW_HOSTNAME"
     sudo scutil --set HostName "$NEW_HOSTNAME"
     success "Hostname set to $NEW_HOSTNAME"
   else
-    success "Hostname remains $CURRENT_HOSTNAME"
+    if [ "$computer_name" = "$local_host_name" ] && [ "$local_host_name" = "$host_name" ]; then
+      success "Hostname remains $local_host_name"
+    else
+      warn "Hostname inconsistency not resolved."
+    fi
   fi
 }
 
-set_macos_defaults() {
-  header "Setting macOS defaults"
+set_system_settings() {
+  header "Setting system settings"
 
-  DEFAULTS_FILE="$BOOTSTRAP_DIR/macos_defaults.list"
-
-  if [ -f "$DEFAULTS_FILE" ]; then
-    while IFS= read -r line; do
-      # Ignore comments and empty lines
-      if [[ -n "$line" && ! "$line" =~ ^\s*# ]]; then
-        eval "$line"
-      fi
-    done < "$DEFAULTS_FILE"
-  else
-    warn "Defaults file not found: $DEFAULTS_FILE"
-  fi
-
-  # Kill affected applications to apply changes
-  for app in "Finder" "Dock"; do
-    killall "$app" &> /dev/null
-  done
-
+  "$BOOTSTRAP_DIR/set_macos_defaults.sh"
   success "Finished macOS defaults"
+
+  # Manual System Settings Configuration
+  info "Manual Action Required: Configure System Settings"
+  info "This applies to settings which cannot be configured via 'defaults' commands."
+  prompt "Once you are done, press Enter to continue..."
+
+  success "macOS settings applied and manual steps completed"
 }
 
 setup_homebrew() {
@@ -193,8 +198,7 @@ setup_homebrew() {
 
   else
     info "Homebrew is already installed. Updating"
-    # TODO do I need to update? should I also upgrade?
-    brew update
+    brew update # ensure latest formula/cask metadata before `brew bundle`
   fi
 
   success "Homebrew setup complete"
@@ -229,41 +233,88 @@ create_xdg_directories() {
   success "XDG directories check complete."
 }
 
-# Function to set up dotfiles
-# Clone dotfiles and run stow
+# Clone dotfiles and symlink essential config files and folders
 setup_dotfiles() {
   header "Setting up dotfiles"
 
-  # TODO symlink zprofile and zsh
-  symlink_dotfiles() {
+  clone_dotfiles() {
     local DOTFILES_DIR=~/dotfiles
 
-    if ! command -v stow &> /dev/null; then
-      warn "Stow not found. Ensure stow is in your Brewfile."
+    if ! command -v git &> /dev/null; then
+      warn "Git not found. Ensure git is in your Brewfile."
       exit 1
     fi
 
-    # An array to easily manage which directories to symlink from .config
-    local config_packages_to_stow=(
+    if [ -d "$DOTFILES_DIR" ]; then
+      info "Dotfiles directory '$DOTFILES_DIR' already exists. Pulling latest changes."
+      (cd "$DOTFILES_DIR" && git pull) || { warn "Failed to pull dotfiles updates."; exit 1; }
+    else
+      info "Dotfiles directory not found. Cloning repository."
+      
+      local suggested_repo=""
+      # This suggestion logic is based on the script's location.
+      if git -C .. rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+          local remote_url=$(git -C .. remote get-url origin 2>/dev/null)
+          if [ -n "$remote_url" ]; then
+              local suggested_user=$(echo "$remote_url" | awk -F'[:/]' '{print $(NF-1)}')
+              if [ -n "$suggested_user" ]; then
+                  suggested_repo="$suggested_user/dotfiles"
+              fi
+          fi
+      fi
+
+      local DOTFILES_INPUT=""
+      if [ -n "$suggested_repo" ]; then
+          prompt "Use '$suggested_repo' as your dotfiles repository? [Y/n]" -n 1 -r
+          echo
+          if [[ $REPLY =~ ^[Nn]$ ]]; then
+              prompt "Enter your dotfiles repository:" DOTFILES_INPUT
+          else
+              DOTFILES_INPUT="$suggested_repo"
+          fi
+      else
+          prompt "Enter your dotfiles repository:" DOTFILES_INPUT
+      fi
+
+      if [ -n "$DOTFILES_INPUT" ]; then
+          local DOTFILES_URL
+          if [[ "$DOTFILES_INPUT" != *"://"* && "$DOTFILES_INPUT" != *"@"* ]]; then
+              DOTFILES_URL="https://github.com/$DOTFILES_INPUT.git"
+              info "Assuming GitHub repository: $DOTFILES_URL"
+          else
+              DOTFILES_URL="$DOTFILES_INPUT"
+          fi
+          info "Cloning dotfiles repository from $DOTFILES_URL."
+          git clone "$DOTFILES_URL" "$DOTFILES_DIR" || { warn "Failed to clone dotfiles repository."; exit 1; }
+      else
+          info "No dotfiles repository provided. Skipping dotfiles setup."
+          return 1 # Indicate that dotfiles were not cloned
+      fi
+    fi
+    return 0 # Indicate success
+  }
+
+  symlink_dotfiles() {
+    local DOTFILES_DIR=~/dotfiles
+
+    # An array to explicitly manage which directories to symlink from .config
+    local config_packages_to_symlink=(
       lazygit
       gh
       ghostty
       git
     )
 
-    if [ ${#config_packages_to_stow[@]} -gt 0 ]; then
-        info "Stowing specified .config directories: ${config_packages_to_stow[*]}"
+    if [ ${#config_packages_to_symlink[@]} -gt 0 ]; then
+        info "Symlinking specified .config directories: ${config_packages_to_symlink[*]}"
 
-        for pkg in "${config_packages_to_stow[@]}"; do
+        for pkg in "${config_packages_to_symlink[@]}"; do
             local source_path="$DOTFILES_DIR/.config/$pkg"
             local target_path="$HOME/.config/$pkg"
             
             if [ -L "$target_path" ]; then
-                # It is a symlink. Check if it's the correct one.
                 local link_content
                 link_content=$(readlink "$target_path")
-
-                # The expected relative path from ~/.config/ to ~/dotfiles/.config/pkg
                 local expected_relative_path="../dotfiles/.config/$pkg"
 
                 if [ "$link_content" = "$source_path" ] || [ "$link_content" = "$expected_relative_path" ]; then
@@ -273,11 +324,9 @@ setup_dotfiles() {
                     exit 1
                 fi
             elif [ -e "$target_path" ]; then
-                # It is a file or directory.
                 warn "Conflict: '$target_path' already exists and is not a symlink. Exiting."
                 exit 1
             else
-                # It does not exist. Create it.
                 ln -s "$source_path" "$target_path"
                 success "Symlink for '$pkg' created."
             fi
@@ -286,62 +335,18 @@ setup_dotfiles() {
         info "No .config packages to stow."
     fi
 
-    success "Selective dotfiles stowing complete."
+    ln -s "$DOTFILES_DIR/home/.zprofile" "$HOME/.zprofile" || {
+      warn "Failed to symlink .zprofile."
+      info "~/.zprofile already exists. Review its contents, remove it, then re-run."
+      exit 1
+    }
+
+    success "Dotfiles symlinking complete."
   }
-
-  local DOTFILES_DIR=~/dotfiles
-
-  if ! command -v git &> /dev/null; then
-    warn "Git not found. Ensure git is in your Brewfile."
+  
+  if ! clone_dotfiles; then
+    warn "Dotfiles cloning skipped or failed. Exiting."
     exit 1
-  fi
-
-  if [ -d "$DOTFILES_DIR" ]; then
-    info "Dotfiles directory '$DOTFILES_DIR' already exists. Pulling latest changes."
-    (cd "$DOTFILES_DIR" && git pull) || { warn "Failed to pull dotfiles updates."; exit 1; }
-  else
-    info "Dotfiles directory not found. Cloning repository."
-    
-    local suggested_repo=""
-    # This suggestion logic is based on the script's location.
-    # It assumes the script is inside a checkout of the dotfiles repo, even if it's not at ~/dotfiles.
-    if git -C .. rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        local remote_url=$(git -C .. remote get-url origin 2>/dev/null)
-        if [ -n "$remote_url" ]; then
-            local suggested_user=$(echo "$remote_url" | awk -F'[:/]' '{print $(NF-1)}')
-            if [ -n "$suggested_user" ]; then
-                suggested_repo="$suggested_user/dotfiles"
-            fi
-        fi
-    fi
-
-    local DOTFILES_INPUT=""
-    if [ -n "$suggested_repo" ]; then
-        prompt "Use '$suggested_repo' as your dotfiles repository? [Y/n]" -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Nn]$ ]]; then
-            prompt "Enter your dotfiles repository:" DOTFILES_INPUT
-        else
-            DOTFILES_INPUT="$suggested_repo"
-        fi
-    else
-        prompt "Enter your dotfiles repository:" DOTFILES_INPUT
-    fi
-
-    if [ -n "$DOTFILES_INPUT" ]; then
-        local DOTFILES_URL
-        if [[ "$DOTFILES_INPUT" != *"://"* && "$DOTFILES_INPUT" != *"@"* ]]; then
-            DOTFILES_URL="https://github.com/$DOTFILES_INPUT.git"
-            info "Assuming GitHub repository: $DOTFILES_URL"
-        else
-            DOTFILES_URL="$DOTFILES_INPUT"
-        fi
-        info "Cloning dotfiles repository from $DOTFILES_URL."
-        git clone "$DOTFILES_URL" "$DOTFILES_DIR" || { warn "Failed to clone dotfiles repository."; exit 1; }
-    else
-        info "No dotfiles repository provided. Skipping dotfiles setup."
-        return
-    fi
   fi
   
   symlink_dotfiles
@@ -393,10 +398,12 @@ bootstrap_env_folder() {
   fi
 }
 
-configure_application_settings() {
-  header "Manual Action Required: Configure Application Settings"
+set_application_settings() {
+  header "Setting application settings"
+  info "Manual Action Required: Configure Application Settings"
   info "Search for 'Application Settings' in RemNote for the details."
   prompt "Once you are done, press Enter to continue..."
+  success "Finished application settings"
 }
 
 # --- Main Execution ---
@@ -414,7 +421,8 @@ setup_homebrew
 setup_dotfiles
 install_homebrew_packages
 create_xdg_directories
-set_macos_defaults
-configure_application_settings
+set_system_settings
+set_application_settings
 
+header "DONE"
 success "Bootstrap script completed successfully!"
