@@ -4,6 +4,13 @@
 
 For instructions on setting up a macOS machine, refer to the [Machine Setup Procedure in `_bootstrap/README.md`](./_bootstrap/README.md).
 
+## Repository Structure
+
+- **`.config/`**: Tool-specific configurations (e.g., Neovim, Tmux, Sketchybar, Ghostty). Symlinked to `~/.config/`.
+- **`home/`**: Dotfiles intended for the root of the home directory (e.g., `.zprofile`, `.taskrc`).
+- **`_bootstrap/`**: Scripts and configurations for initial machine setup, macOS defaults, and `Brewfile` package management.
+- **`_archive/`**: Retired or experimental configurations kept for reference.
+
 ---
 
 ## Manual Symlinking (Stow)
