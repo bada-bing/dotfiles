@@ -29,7 +29,7 @@ alias hgrep='history 1 | grep'
 alias ndx='git clean -ndX'
 alias fdx='git clean -fdX'
 
-alias sws='~/src/scripts/dev-env/start_work_session.sh'
+alias sjs='~/src/scripts/dev-env/start_job_session.sh'
 alias sss='~/src/scripts/dev-env/start_study_session.sh'
 
 wa-1() {
