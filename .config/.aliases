@@ -20,7 +20,7 @@ alias ..='cd ..'
 alias ...='cd ../..'
 
 alias bu='brew update-if-needed; brew outdated'
-alias buu='brew upgrade'
+alias buu='brew upgrade -y'
 
 alias wpr-utils='tmux new-session -d -s wpr-utils "mprocs -c /Users/miki/Documents/toolbox/env/mprocs/wpr-utils.yaml"'
 alias szsh='source ~/.config/zsh/.zshrc'
@@ -29,8 +29,9 @@ alias hgrep='history 1 | grep'
 alias ndx='git clean -ndX'
 alias fdx='git clean -fdX'
 
-alias sjs='~/src/scripts/dev-env/start_job_session.sh'
-alias sss='~/src/scripts/dev-env/start_study_session.sh'
+alias sjs='~/src/scripts/dev-env/start_session.sh job'
+alias sss='~/src/scripts/dev-env/start_session.sh study'
+alias sos='~/src/scripts/dev-env/start_session.sh ops'
 
 wa-1() {
     (cd /Users/miki/src/wa-1 && npm run start -- "$@")
