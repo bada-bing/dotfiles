@@ -10,7 +10,10 @@ export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 # ESSENTIAL DIRECTORIES
 export ICLOUD_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
 export DOCUMENTS_DIR="$HOME/Documents"
-export ENV_DIR="$DOCUMENTS_DIR/toolbox/env"
+export TOOLBOX_DIR="$HOME/Developer/toolbox"
+export SCRIPTS_DIR="$TOOLBOX_DIR/scripts"
+export ENV_DIR="$TOOLBOX_DIR/private/env"
+export WA_1_CONFIG_DIR="$ENV_DIR/wa-1"
 
 # CONFIGURATION LOCATIONS
 export GIT_CONFIG_GLOBAL="$XDG_CONFIG_HOME/git/.gitconfig"

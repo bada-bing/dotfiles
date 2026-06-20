@@ -37,7 +37,7 @@ export GOPATH=/Users/miki/src/go
 
 # PROMPT
 # source $ZDOTDIR/.prompt.zsh
-eval "$(starship init zsh)"
+eval "$(/opt/homebrew/bin/starship init zsh)"
 
 # Mise - Runmtime/Package Manager (this line is important to load env variables)
 eval "$(/opt/homebrew/bin/mise activate zsh)"
@@ -99,13 +99,13 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_ALT_C_COMMAND="fd -t d . $HOME"
 
 # export PATH="/opt/homebrew/opt/python@3.10/bin:$PATH"
-export PATH="~/src/scripts:/opt/homebrew/bin:$GOPATH/bin:$HOME/.cargo/bin:$PATH"
+export PATH="$SCRIPTS_DIR:/opt/homebrew/bin:$GOPATH/bin:$HOME/.cargo/bin:$PATH"
 
 # GCLOUD & KUBECTL
 SE_GKE_GCLOUD_AUTH_PLUGIN=True
 
-source ~/src/scripts/local_development/pick_npm_script.sh
-source ~/src/scripts/git/checkout_branch.sh
+source $SCRIPTS_DIR/local_development/pick_npm_script.sh
+source $SCRIPTS_DIR/git/checkout_branch.sh
 
 eval "$(zoxide init zsh)"
 
