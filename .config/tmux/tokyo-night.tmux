@@ -38,7 +38,7 @@ tmux_set window-status-last-style "fg=${TN_DARK5}"
 tmux_set window-status-separator ""
 
 # ===== PANE BORDERS =====
-Inactive pane border
+# Inactive pane border
 tmux_set pane-border-style "fg=${TN_BG_HIGHLIGHT}"
 
 # Active pane border
