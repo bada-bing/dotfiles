@@ -1,5 +1,5 @@
 alias lg=lazygit
-alias tn='~/src/scripts/local_development/tmux_sessionizer.sh'
+alias tn="$SCRIPTS_DIR/local_development/tmux_sessionizer.sh"
 alias tks='tmux kill-server'
 alias ts='tmux kill-session'
 alias ta='tmux attach'
@@ -11,7 +11,7 @@ alias cph='history | tail -n 1 | cut -c 8- | pbcopy'
 alias ls='lsd -lah'
 alias vim=nvim
 alias vv='nvim .'
-alias vdot='cd ~/dotfiles; nvim .'
+alias vdot='cd ~/Developer/toolbox/dotfiles; nvim .'
 alias gst='git status'
 alias gpsh='git push'
 alias gpl='git pull'
@@ -22,17 +22,18 @@ alias ...='cd ../..'
 alias bu='brew update-if-needed; brew outdated'
 alias buu='brew upgrade -y'
 
-alias wpr-utils='tmux new-session -d -s wpr-utils "mprocs -c /Users/miki/Documents/toolbox/env/mprocs/wpr-utils.yaml"'
+alias wpr-utils='tmux new-session -d -s wpr-utils "mprocs -c $ENV_DIR/mprocs/wpr-utils.yaml"'
+alias clinit="$ENV_DIR/claude/init-project.sh"
 alias szsh='source ~/.config/zsh/.zshrc'
 alias hgrep='history 1 | grep'
 
 alias ndx='git clean -ndX'
 alias fdx='git clean -fdX'
 
-alias sjs='~/src/scripts/dev-env/start_session.sh job'
-alias sss='~/src/scripts/dev-env/start_session.sh study'
-alias sos='~/src/scripts/dev-env/start_session.sh ops'
+alias sjs="$SCRIPTS_DIR/dev-env/start_session.sh job"
+alias sss="$SCRIPTS_DIR/dev-env/start_session.sh study"
+alias sos="$SCRIPTS_DIR/dev-env/start_session.sh ops"
 
 wa-1() {
-    (cd /Users/miki/src/wa-1 && npm run start -- "$@")
+    (cd "$HOME/src/wa-1" && npm run start -- "$@")
 }
