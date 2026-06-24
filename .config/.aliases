@@ -1,7 +1,7 @@
 alias lg=lazygit
 alias tn="$SCRIPTS_DIR/local_development/tmux_sessionizer.sh"
 alias tks='tmux kill-server'
-alias ts='tmux kill-session'
+alias ts='current_session=$(tmux display-message -p "#S") && tmux switch-client -n && tmux kill-session -t "$current_session"'
 alias ta='tmux attach'
 
 alias nn=pick_npm_script
