@@ -1,7 +1,7 @@
 # TEXT EDITORS
 export EDITOR="nvim"
 # export EDITOR="code -w" # -w is to wait untill you are done with editing
-export VISUAL="nvim"
+export VISUAL="nvim --clean"
 
 # ZSH ENVIRONMENT VARIABLES
 # export HISTFILE="$ZDOTDIR/.zhistory" # For some reason does not work as expected
