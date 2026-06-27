@@ -14,6 +14,7 @@ export TOOLBOX_DIR="$HOME/Developer/toolbox"
 export SCRIPTS_DIR="$TOOLBOX_DIR/scripts"
 export ENV_DIR="$TOOLBOX_DIR/private/env"
 export WA_1_CONFIG_DIR="$ENV_DIR/wa-1"
+export PROJECTS_PATH="$HOME/Developer/src"  # colon-separated list of project root directories
 
 # CONFIGURATION LOCATIONS
 export GIT_CONFIG_GLOBAL="$XDG_CONFIG_HOME/git/.gitconfig"

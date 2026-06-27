@@ -33,7 +33,7 @@ source $XDG_CONFIG_HOME/.aliases
 source $ENV_DIR/work.aliases
 
 export PATH="/Applications/IntelliJ IDEA.app/Contents/MacOS:$PATH"
-export GOPATH=/Users/miki/src/go
+export GOPATH=$HOME/Developer/src/go
 
 # PROMPT
 # source $ZDOTDIR/.prompt.zsh

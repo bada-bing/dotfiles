@@ -68,7 +68,7 @@
 	# safe-clean = clean -xdf -e .idea -e .vscode
 
 [safe]
-	directory = ~/src
+	directory = ~/Developer/src
 
 ; correctly match repositories with associated git credentials based on the url of remote
 [include]
