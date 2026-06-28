@@ -1,3 +1,5 @@
+vim.cmd([[au BufRead,BufNewFile *.jq setfiletype jq]])
+
 vim.api.nvim_create_augroup("AutoExercismTest", { clear = true })
 
 vim.api.nvim_create_autocmd("BufWritePost", {
