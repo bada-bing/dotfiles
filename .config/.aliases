@@ -3,6 +3,7 @@ alias tn="$SCRIPTS_DIR/local_development/tmux_sessionizer.sh"
 alias tks='tmux kill-server'
 alias ts='current_session=$(tmux display-message -p "#S") && tmux switch-client -n && tmux kill-session -t "$current_session"'
 alias ta='tmux attach'
+alias td="$SCRIPTS_DIR/dev-env/default_session.sh"
 
 alias nn=pick_npm_script
 alias cat=bat
@@ -35,5 +36,5 @@ alias sss="$SCRIPTS_DIR/dev-env/start_session.sh study"
 alias sos="$SCRIPTS_DIR/dev-env/start_session.sh ops"
 
 wa-1() {
-    (cd "$HOME/src/wa-1" && npm run start -- "$@")
+    (cd "$HOME/Developer/src/wa-1" && npm run start -- "$@")
 }
