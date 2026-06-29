@@ -44,7 +44,7 @@ return {
 			require('nvim-treesitter.configs').setup {
 			  highlight = { enable = true },
 			  indent = { enable = true },
-			  ensure_installed = { "lua", "python", "javascript", "java", "typescript", "go" },
+			  ensure_installed = { "lua", "python", "javascript", "java", "typescript", "go", "bash", "json", "yaml", "toml", "markdown", "markdown_inline" },
 			}
 		  end
 		},
@@ -53,9 +53,13 @@ return {
 				---@type snacks.Config
 				opts = {
 						indent = {
-								-- your indent configuration comes here
-								-- or leave it empty to use the default settings
-								-- refer to the configuration section below
+								-- Disable treesitter-based scope detection — crashes in Neovim 0.12 on
+								-- markdown files due to a nil node in the conceal_lines predicate
+								-- (https://github.com/neovim/neovim/issues/39032). Falls back to
+								-- indent-based scope detection which works correctly everywhere.
+								scope = {
+										treesitter = { enabled = false },
+								},
 						},
 						lazygit = {}
 				}
