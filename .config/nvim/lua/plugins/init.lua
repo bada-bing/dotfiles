@@ -11,7 +11,7 @@ return {
 						},
 				},
 		},
-		"folke/which-key.nvim",
+		{ "folke/which-key.nvim", event = "VeryLazy" },
 		-- { "folke/neoconf.nvim", cmd = "Neoconf" },
 		{
 				'nvim-lualine/lualine.nvim',
