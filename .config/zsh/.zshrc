@@ -26,6 +26,9 @@ setopt PUSHD_SILENT # Do not print the directory stack after pushd or popd
 
 setopt appendhistory
 
+# HOMEBREW
+export HOMEBREW_AUTO_UPDATE_SECS=7200
+
 # ALIASES
 alias d='dirs -v'
 for index ({1..9}) alias "$index"="cd +${index}"; unset index
