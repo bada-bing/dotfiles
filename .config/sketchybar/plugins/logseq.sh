@@ -7,6 +7,6 @@
 
 # To make the logseq page dynamic, check how it is done in wa-2/logseq-sessionizer 
 
-TASK=$(sh ~/src/scripts/local_development/get_logseq_today_active_task.sh | tr -d '"')
+TASK=$(sh $HOME/Developer/toolbox/scripts/local_development/get_logseq_today_active_task.sh | tr -d '"')
 
 sketchybar --set "$NAME" label="$TASK" icon="$($CONFIG_DIR/plugins/icon_map_fn.sh "Logseq")"
