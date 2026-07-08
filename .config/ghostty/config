@@ -6,7 +6,7 @@ background-opacity = 1.0
 
 window-colorspace = display-p3
 
-macos-titlebar-style = "hidden"
+macos-titlebar-style = tabs
 macos-option-as-alt = left
 
 confirm-close-surface = false
