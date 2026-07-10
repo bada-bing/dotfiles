@@ -18,3 +18,5 @@ command = /bin/bash -lc "~/.config/ghostty/attachTmux.sh; exec -l $SHELL"
 keybind = shift+enter=text:\x1b\r
 keybind = global:cmd+shift+ctrl+alt+i=toggle_quick_terminal
 quick-terminal-size = 40%
+quick-terminal-position = bottom
+quick-terminal-animation-duration = 0.1
