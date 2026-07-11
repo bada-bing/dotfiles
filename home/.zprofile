@@ -23,3 +23,4 @@ export GIT_CONFIG_GLOBAL="$XDG_CONFIG_HOME/git/.gitconfig"
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :
 # Added by Obsidian
 export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"
+export PATH="$XDG_DATA_HOME/nvim/mason/bin:$PATH"
