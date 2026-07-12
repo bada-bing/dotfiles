@@ -11,9 +11,10 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- gf follows Logseq [[wiki-links]] in KB buffers: [[page name]] opens
--- pages/page name.md (Logseq stores namespace '/' as '%2F' on disk).
--- Falls back to built-in gf when the cursor is not inside a wiki-link.
+-- gf follows Logseq [[wiki-links]] and ((block refs)) in KB buffers:
+-- [[page name]] opens pages/page name.md (Logseq stores namespace '/' as
+-- '%2F' on disk), ((uuid)) jumps to the block carrying that id:: property.
+-- Falls back to built-in gf when the cursor is not on either.
 -- Opening a page that doesn't exist yet gives a new buffer, so saving it
 -- creates the page — same as following a link to a new page in Logseq.
 local logseq_kb = vim.fn.expand("~/Documents/Logseq/KB")
@@ -33,9 +34,36 @@ local function logseq_journal_path(name)
   return string.format("%s/journals/%s_%s_%02d.md", logseq_kb, year, logseq_months[mon], tonumber(day))
 end
 
+-- ((uuid)) block refs resolve through the id:: property Logseq writes under
+-- the referenced block; find it with ripgrep and jump to that file/line.
+local function logseq_follow_block_ref(line, col)
+  local from = 1
+  while true do
+    local s, e, uuid = line:find("%(%(([%x%-]+)%)%)", from)
+    if not s then
+      return false
+    end
+    if col >= s and col <= e then
+      local hits = vim.fn.systemlist({ "rg", "--vimgrep", "--fixed-strings", "id:: " .. uuid, logseq_kb })
+      if #hits == 0 then
+        vim.notify("block ref not found: " .. uuid, vim.log.levels.WARN)
+      else
+        local file, lnum = hits[1]:match("^(.-):(%d+):")
+        vim.cmd.edit(vim.fn.fnameescape(file))
+        vim.api.nvim_win_set_cursor(0, { tonumber(lnum), 0 })
+      end
+      return true
+    end
+    from = e + 1
+  end
+end
+
 local function follow_logseq_link()
   local line = vim.api.nvim_get_current_line()
   local col = vim.api.nvim_win_get_cursor(0)[2] + 1
+  if logseq_follow_block_ref(line, col) then
+    return
+  end
   local from = 1
   while true do
     local s, e, name = line:find("%[%[(.-)%]%]", from)
@@ -55,10 +83,84 @@ local function follow_logseq_link()
   vim.cmd("normal! gf")
 end
 
+-- Linked references: quickfix list of every block in the KB linking to the
+-- current page. Journal pages are referenced by their date title, so map the
+-- filename back to e.g. "Jul 12th, 2026" before searching.
+local logseq_month_names = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" }
+
+local function logseq_page_title(path)
+  local y, m, d = path:match("/journals/(%d+)_(%d+)_(%d+)%.md$")
+  if y then
+    d = tonumber(d)
+    local suffix = ({ "st", "nd", "rd" })[d % 10]
+    if not suffix or (d % 100 >= 11 and d % 100 <= 13) then
+      suffix = "th"
+    end
+    return string.format("%s %d%s, %s", logseq_month_names[tonumber(m)], d, suffix, y)
+  end
+  local name = path:match("([^/]+)%.md$")
+  return name and name:gsub("%%2F", "/") or nil
+end
+
+local function logseq_backlinks()
+  local title = logseq_page_title(vim.api.nvim_buf_get_name(0))
+  if not title then
+    return
+  end
+  local link = "[[" .. title .. "]]"
+  local hits = vim.fn.systemlist({ "rg", "--vimgrep", "--fixed-strings", link, logseq_kb })
+  if #hits == 0 then
+    vim.notify("no linked references to " .. link)
+    return
+  end
+  vim.fn.setqflist({}, " ", { title = "Linked references to " .. link, efm = "%f:%l:%c:%m", lines = hits })
+  vim.cmd.copen()
+end
+
+-- Yank a ((block-ref)) for the block under the cursor, minting an id::
+-- property (written exactly as Logseq would) when the block has none yet.
+local function logseq_yank_block_ref()
+  local lnum = vim.api.nvim_win_get_cursor(0)[1]
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local start
+  for i = lnum, 1, -1 do
+    if lines[i]:match("^%s*%-%s") or lines[i]:match("^%s*%-$") then
+      start = i
+      break
+    end
+  end
+  if not start then
+    vim.notify("no block found at cursor", vim.log.levels.WARN)
+    return
+  end
+  local indent = lines[start]:match("^(%s*)%-")
+  local uuid
+  for i = start + 1, #lines do
+    local l = lines[i]
+    if l:match("^%s*%-%s") or #l:match("^%s*") <= #indent then
+      break
+    end
+    uuid = l:match("^%s*id::%s*([%x%-]+)%s*$")
+    if uuid then
+      break
+    end
+  end
+  if not uuid then
+    uuid = vim.fn.system("uuidgen"):gsub("%s+", ""):lower()
+    vim.api.nvim_buf_set_lines(0, start, start, false, { indent .. "  id:: " .. uuid })
+  end
+  local ref = "((" .. uuid .. "))"
+  vim.fn.setreg("+", ref)
+  vim.fn.setreg('"', ref)
+  vim.notify("yanked " .. ref)
+end
+
 vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
   pattern = logseq_kb .. "/*.md",
   callback = function(ev)
     vim.keymap.set("n", "gf", follow_logseq_link, { buffer = ev.buf, desc = "Follow Logseq wiki-link" })
+    vim.keymap.set("n", "<leader>lr", logseq_backlinks, { buffer = ev.buf, desc = "Logseq linked references" })
+    vim.keymap.set("n", "<leader>ly", logseq_yank_block_ref, { buffer = ev.buf, desc = "Yank Logseq block ref" })
   end,
 })
 
