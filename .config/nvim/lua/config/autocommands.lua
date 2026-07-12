@@ -117,11 +117,9 @@ local function logseq_backlinks()
   vim.cmd.copen()
 end
 
--- Yank a ((block-ref)) for the block under the cursor, minting an id::
--- property (written exactly as Logseq would) when the block has none yet.
-local function logseq_yank_block_ref()
-  local lnum = vim.api.nvim_win_get_cursor(0)[1]
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+-- Locate the Logseq block containing the given line: returns the block's
+-- first line number, its bullet indent, and its id:: uuid if it has one.
+local function logseq_block_at(lines, lnum)
   local start
   for i = lnum, 1, -1 do
     if lines[i]:match("^%s*%-%s") or lines[i]:match("^%s*%-$") then
@@ -130,20 +128,31 @@ local function logseq_yank_block_ref()
     end
   end
   if not start then
-    vim.notify("no block found at cursor", vim.log.levels.WARN)
-    return
+    return nil
   end
   local indent = lines[start]:match("^(%s*)%-")
-  local uuid
   for i = start + 1, #lines do
     local l = lines[i]
     if l:match("^%s*%-%s") or #l:match("^%s*") <= #indent then
       break
     end
-    uuid = l:match("^%s*id::%s*([%x%-]+)%s*$")
+    local uuid = l:match("^%s*id::%s*([%x%-]+)%s*$")
     if uuid then
-      break
+      return start, indent, uuid
     end
+  end
+  return start, indent, nil
+end
+
+-- Yank a ((block-ref)) for the block under the cursor, minting an id::
+-- property (written exactly as Logseq would) when the block has none yet.
+local function logseq_yank_block_ref()
+  local lnum = vim.api.nvim_win_get_cursor(0)[1]
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local start, indent, uuid = logseq_block_at(lines, lnum)
+  if not start then
+    vim.notify("no block found at cursor", vim.log.levels.WARN)
+    return
   end
   if not uuid then
     uuid = vim.fn.system("uuidgen"):gsub("%s+", ""):lower()
@@ -155,10 +164,70 @@ local function logseq_yank_block_ref()
   vim.notify("yanked " .. ref)
 end
 
+-- gx opens the thing under the cursor in the Logseq app (the inverse of gf):
+-- ((uuid)) -> that block, [[link]] -> that page, plain URL -> browser as
+-- usual, anything else -> the current page, deep-linked to the cursor's
+-- block when it carries an id:: property.
+local function logseq_open_in_app()
+  local line = vim.api.nvim_get_current_line()
+  local col = vim.api.nvim_win_get_cursor(0)[2] + 1
+  local graph = vim.fn.fnamemodify(logseq_kb, ":t")
+
+  local function url_encode(s)
+    return (s:gsub("[^%w%-%._~]", function(c)
+      return string.format("%%%02X", string.byte(c))
+    end))
+  end
+
+  local target
+  local from = 1
+  while not target do
+    local s, e, uuid = line:find("%(%(([%x%-]+)%)%)", from)
+    if not s then
+      break
+    end
+    if col >= s and col <= e then
+      target = "block-id=" .. uuid
+    end
+    from = e + 1
+  end
+  from = 1
+  while not target do
+    local s, e, name = line:find("%[%[(.-)%]%]", from)
+    if not s then
+      break
+    end
+    if col >= s and col <= e then
+      target = "page=" .. url_encode(name)
+    end
+    from = e + 1
+  end
+  if not target then
+    local cfile = vim.fn.expand("<cfile>")
+    if cfile:match("^https?://") then
+      vim.ui.open(cfile)
+      return
+    end
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    local _, _, uuid = logseq_block_at(lines, vim.api.nvim_win_get_cursor(0)[1])
+    if uuid then
+      target = "block-id=" .. uuid
+    else
+      local title = logseq_page_title(vim.api.nvim_buf_get_name(0))
+      if not title then
+        return
+      end
+      target = "page=" .. url_encode(title)
+    end
+  end
+  vim.ui.open("logseq://graph/" .. graph .. "?" .. target)
+end
+
 vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
   pattern = logseq_kb .. "/*.md",
   callback = function(ev)
     vim.keymap.set("n", "gf", follow_logseq_link, { buffer = ev.buf, desc = "Follow Logseq wiki-link" })
+    vim.keymap.set("n", "gx", logseq_open_in_app, { buffer = ev.buf, desc = "Open in Logseq app" })
     vim.keymap.set("n", "<leader>lr", logseq_backlinks, { buffer = ev.buf, desc = "Logseq linked references" })
     vim.keymap.set("n", "<leader>ly", logseq_yank_block_ref, { buffer = ev.buf, desc = "Yank Logseq block ref" })
   end,
