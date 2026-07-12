@@ -20,7 +20,7 @@ alias gpl='git pull'
 alias ..='cd ..'
 alias ...='cd ../..'
 
-alias bu='brew update-if-needed; brew outdated'
+alias bu='brew update; brew outdated'
 alias buu='brew upgrade -y'
 
 alias wpr-utils='tmux new-session -d -s wpr-utils "mprocs -c $ENV_DIR/mprocs/wpr-utils.yaml"'
