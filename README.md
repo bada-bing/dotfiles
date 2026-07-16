@@ -13,16 +13,15 @@ For instructions on setting up a macOS machine, refer to the [Machine Setup Proc
 
 ---
 
-## Manual Symlinking (Stow)
+## Symlinking (Stow)
 
-> [!NOTE]
-> I am reconsidering if I really need Stow; the bootstrap script relies on simple `ln -s` for symlinking specific configurations. 
+`_bootstrap/setup_machine.sh` runs this automatically. To symlink manually:
 
-`cd ~/dotfiles;` ensure you run Stow commands from `/dotfiles` dir
+`cd ~/Developer/toolbox/dotfiles;` ensure you run Stow commands from the `dotfiles` dir
 
-`stow -S home` add $HOME symlinks (-S is default option, means symlink and is not necessary)
-`stow -S -t ~/.config .config` add CONFIG symlinks
+`stow -t ~ home` add $HOME symlinks
+`stow -t ~/.config .config` add CONFIG symlinks
 
 In case you need to remove the symlinks:
-`stow -D home` remove CONFIG symlinks
+`stow -D -t ~ home` remove $HOME symlinks
 `stow -D -t ~/.config .config` remove CONFIG symlinks

@@ -201,6 +201,11 @@ setup_homebrew() {
     brew update # ensure latest formula/cask metadata before `brew bundle`
   fi
 
+  if ! command -v stow &> /dev/null; then
+    info "Installing GNU Stow (required to symlink dotfiles)"
+    brew install stow
+  fi
+
   success "Homebrew setup complete"
 }
 
@@ -295,49 +300,17 @@ setup_dotfiles() {
   }
 
   symlink_dotfiles() {
-    local DOTFILES_DIR=~/dotfiles
+    local DOTFILES_DIR=~/Developer/toolbox/dotfiles
 
-    # An array to explicitly manage which directories to symlink from .config
-    local config_packages_to_symlink=(
-      lazygit
-      gh
-      ghostty
-      git
-    )
+    info "Stowing .config packages"
+    (cd "$DOTFILES_DIR" && stow -v -t ~/.config .config) || {
+      warn "Failed to stow .config packages. Resolve any conflicting files at the target, then re-run."
+      exit 1
+    }
 
-    if [ ${#config_packages_to_symlink[@]} -gt 0 ]; then
-        info "Symlinking specified .config directories: ${config_packages_to_symlink[*]}"
-
-        for pkg in "${config_packages_to_symlink[@]}"; do
-            local source_path="$DOTFILES_DIR/.config/$pkg"
-            local target_path="$HOME/.config/$pkg"
-            
-            if [ -L "$target_path" ]; then
-                local link_content
-                link_content=$(readlink "$target_path")
-                local expected_relative_path="../dotfiles/.config/$pkg"
-
-                if [ "$link_content" = "$source_path" ] || [ "$link_content" = "$expected_relative_path" ]; then
-                    success "Symlink for '$pkg' already exists and is correct."
-                else
-                    warn "Conflict: '$target_path' is a symlink. It points to '$link_content', but should point to '$source_path' (absolute) or '$expected_relative_path' (relative). Exiting."
-                    exit 1
-                fi
-            elif [ -e "$target_path" ]; then
-                warn "Conflict: '$target_path' already exists and is not a symlink. Exiting."
-                exit 1
-            else
-                ln -s "$source_path" "$target_path"
-                success "Symlink for '$pkg' created."
-            fi
-        done
-    else
-        info "No .config packages to stow."
-    fi
-
-    ln -s "$DOTFILES_DIR/home/.zprofile" "$HOME/.zprofile" || {
-      warn "Failed to symlink .zprofile."
-      info "~/.zprofile already exists. Review its contents, remove it, then re-run."
+    info "Stowing home dotfiles"
+    (cd "$DOTFILES_DIR" && stow -v -t ~ home) || {
+      warn "Failed to stow home dotfiles. Resolve any conflicting files at the target, then re-run."
       exit 1
     }
 
