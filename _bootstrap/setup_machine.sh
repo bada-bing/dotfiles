@@ -10,7 +10,7 @@ C_YELLOW="\033[1;33m"
 C_RESET="\033[0m"
 
 # --- Path Constants ---
-BOOTSTRAP_DIR="$HOME/dotfiles/_bootstrap"
+BOOTSTRAP_DIR="$HOME/Developer/toolbox/dotfiles/_bootstrap"
 
 header() {
   echo -e " ${C_BLUE}--- ${1} ---${C_RESET}"
@@ -192,7 +192,7 @@ setup_homebrew() {
     info "Installing Homebrew"
     # The brew installation script takes care of Xcode Command Line Tools (CLT)
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  
+
     # Ensure Homebrew is in the PATH for the current script execution
     eval "$(/opt/homebrew/bin/brew shellenv)"
 
@@ -238,7 +238,7 @@ setup_dotfiles() {
   header "Setting up dotfiles"
 
   clone_dotfiles() {
-    local DOTFILES_DIR=~/dotfiles
+    local DOTFILES_DIR=~/Developer/toolbox/dotfiles
 
     if ! command -v git &> /dev/null; then
       warn "Git not found. Ensure git is in your Brewfile."
@@ -354,45 +354,44 @@ setup_dotfiles() {
 }
 
 bootstrap_env_folder() {
-  header "Checking Documents folder setup"
+  header "Checking toolbox/private folder setup"
 
-  local DOCS_DIR="$HOME/Documents"
-  local TOOLBOX_ENV_DIR="$DOCS_DIR/toolbox/env"
+  local TOOLBOX_PRIVATE_DIR="$HOME/Developer/toolbox/private"
+  local TOOLBOX_ENV_DIR="$TOOLBOX_PRIVATE_DIR/env"
   local ICLOUD_BAK_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/BAK"
 
-  # Check if documents folder is NOT empty AND it contains the specific folder.
-  if [ -d "$DOCS_DIR" ] && [ "$(ls -A "$DOCS_DIR" 2>/dev/null)" ] && [ -d "$TOOLBOX_ENV_DIR" ]; then
-    # It is an explict decision to manually reconcile the difference between iCloud and Documents
+  # Check if the private toolbox folder is already present.
+  if [ -d "$TOOLBOX_ENV_DIR" ]; then
     local ICLOUD_TOOLBOX_ENV_DIR="$ICLOUD_BAK_DIR/toolbox/env"
 
     if [ -d "$ICLOUD_TOOLBOX_ENV_DIR" ]; then
-      DOCS_TOOLBOX_SIZE=$(du -sh "$TOOLBOX_ENV_DIR" | awk '{print $1}')
+      TOOLBOX_SIZE=$(du -sh "$TOOLBOX_ENV_DIR" | awk '{print $1}')
       ICLOUD_TOOLBOX_SIZE=$(du -sh "$ICLOUD_TOOLBOX_ENV_DIR" | awk '{print $1}')
 
-      if [ "$DOCS_TOOLBOX_SIZE" != "$ICLOUD_TOOLBOX_SIZE" ]; then
+      if [ "$TOOLBOX_SIZE" != "$ICLOUD_TOOLBOX_SIZE" ]; then
         warn "Mismatch in toolbox/env directory size:"
-        info "   Documents/toolbox/env size: $DOCS_TOOLBOX_SIZE"
+        info "   Developer/toolbox/private/env size: $TOOLBOX_SIZE"
         info "   iCloud BAK/toolbox/env size: $ICLOUD_TOOLBOX_SIZE"
         warn "Reconcile the differences manually. Exiting."
         exit 1
       else
-        success "Documents/toolbox/env size matches iCloud BAK/toolbox/env size ($DOCS_TOOLBOX_SIZE)."
+        success "toolbox/private/env size matches iCloud BAK/toolbox/env size ($TOOLBOX_SIZE)."
       fi
     else
       warn "iCloud BAK/toolbox/env directory not found at '$ICLOUD_TOOLBOX_ENV_DIR'. Cannot compare sizes."
     fi
-    success "Documents folder appears to be set up."
+    success "toolbox/private folder appears to be set up."
   else
     if [ ! -d "$ICLOUD_BAK_DIR" ]; then
         warn "iCloud BAK folder not found at '$ICLOUD_BAK_DIR'. Exiting."
         exit 1
     fi
-    
-    info "The 'toolbox/env' directory is missing from your Documents folder. It should be restored from the iCloud backup."
+
+    info "The toolbox/private folder is missing. It should be restored from the iCloud backup."
     echo "Run the following command to restore it:"
     echo
-    echo "mkdir -p "$DOCS_DIR""
-    echo "cp -a "$ICLOUD_BAK_DIR/." "$DOCS_DIR/""
+    echo "mkdir -p \"$TOOLBOX_PRIVATE_DIR\""
+    echo "cp -a \"$ICLOUD_BAK_DIR/.\" \"$TOOLBOX_PRIVATE_DIR/\""
     echo
     prompt "After running the command (or if you want to skip), press Enter to continue the setup script..."
   fi
@@ -402,6 +401,12 @@ set_application_settings() {
   header "Setting application settings"
   info "Manual Action Required: Configure Application Settings"
   info "Search for 'Application Settings' in RemNote for the details."
+  info ""
+  # TODO: move these instructions to RemNote under "Application Settings"
+  info "Dock → 'All Desktops' (right-click app icon → Options → All Desktops):"
+  info "  - KeePassXC  (keeps it accessible from any Space; fixes auto-type across Spaces)"
+  info "  - Apple Notes  (quick capture from any Space)"
+  info "  - Reminders  (surface reminders without Space-switching)"
   prompt "Once you are done, press Enter to continue..."
   success "Finished application settings"
 }
