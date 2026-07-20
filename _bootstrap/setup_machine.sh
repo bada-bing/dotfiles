@@ -153,6 +153,7 @@ set_hostname() {
   else
     info "Current hostname is $local_host_name"
   fi
+
   prompt "Enter new hostname (leave blank to keep current):" NEW_HOSTNAME
 
   if [ -n "$NEW_HOSTNAME" ]; then
@@ -299,6 +300,35 @@ setup_dotfiles() {
     return 0 # Indicate success
   }
 
+  checkout_machine_branch() {
+    local DOTFILES_DIR=~/Developer/toolbox/dotfiles
+    local mapping_file="$BOOTSTRAP_DIR/machine-branches.txt"
+    local hostname=$(scutil --get LocalHostName)
+    local target_branch=""
+
+    if [ -f "$mapping_file" ]; then
+      target_branch=$(grep -E "^${hostname}=" "$mapping_file" | cut -d= -f2)
+    fi
+
+    if [ -z "$target_branch" ]; then
+      info "No branch mapping for hostname '$hostname'; staying on default branch."
+      return 0
+    fi
+
+    local current_branch=$(cd "$DOTFILES_DIR" && git rev-parse --abbrev-ref HEAD)
+    if [ "$current_branch" = "$target_branch" ]; then
+      info "Already on dotfiles branch '$target_branch' for this machine."
+      return 0
+    fi
+
+    info "Hostname '$hostname' is mapped to dotfiles branch '$target_branch' (currently on '$current_branch'). Switching."
+    (cd "$DOTFILES_DIR" && git fetch origin && git checkout "$target_branch" && git pull) || {
+      warn "Failed to switch to branch '$target_branch'."
+      exit 1
+    }
+    success "Switched to dotfiles branch '$target_branch'."
+  }
+
   symlink_dotfiles() {
     local DOTFILES_DIR=~/Developer/toolbox/dotfiles
 
@@ -321,7 +351,8 @@ setup_dotfiles() {
     warn "Dotfiles cloning skipped or failed. Exiting."
     exit 1
   fi
-  
+
+  checkout_machine_branch
   symlink_dotfiles
   success "Finished dotfiles setup"
 }

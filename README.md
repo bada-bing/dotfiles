@@ -13,6 +13,19 @@ For instructions on setting up a macOS machine, refer to the [Machine Setup Proc
 
 ---
 
+## Per-Machine Divergence
+
+> [!NOTE]
+> If a machine needs to diverge from the shared dotfiles (e.g. a simpler Neovim config, no custom
+> statusbar), create a branch for it (e.g. `custom`) and add a `hostname=branch` line to
+> [`_bootstrap/machine-branches.txt`](./_bootstrap/machine-branches.txt) **on `main`** — that's what
+> makes every clone aware of the mapping. `setup_machine.sh` reads it and switches branches by
+> hostname automatically, so there's nothing to remember by hand. Rebase the branch onto `main`
+> periodically to stay in sync, and delete it (and its mapping line) once the divergence is no
+> longer needed.
+
+---
+
 ## Symlinking (Stow)
 
 `_bootstrap/setup_machine.sh` runs this automatically. To symlink manually:

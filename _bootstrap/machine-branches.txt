@@ -1,0 +1,5 @@
+# Maps a machine's hostname to the dotfiles branch it should run.
+# setup_machine.sh reads this and switches branches automatically on that machine.
+# Format: hostname=branch
+#
+# example-laptop-hostname=custom
