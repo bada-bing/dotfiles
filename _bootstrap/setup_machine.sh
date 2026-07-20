@@ -154,7 +154,36 @@ set_hostname() {
     info "Current hostname is $local_host_name"
   fi
 
-  prompt "Enter new hostname (leave blank to keep current):" NEW_HOSTNAME
+  local mapping_file="$BOOTSTRAP_DIR/machine-branches.txt"
+  local known_names=()
+  local known_branches=()
+  if [ -f "$mapping_file" ]; then
+    while IFS='=' read -r name branch; do
+      [[ -z "$name" || "$name" == \#* ]] && continue
+      known_names+=("$name")
+      known_branches+=("$branch")
+    done < "$mapping_file"
+  fi
+
+  if [ ${#known_names[@]} -gt 0 ]; then
+    info "Known machine profiles:"
+    for i in "${!known_names[@]}"; do
+      info "  $((i+1))) ${known_names[$i]}  (branch: ${known_branches[$i]})"
+    done
+    prompt "Choose a number, type a new hostname to customize, or leave blank to keep current:" NEW_HOSTNAME
+  else
+    prompt "Enter new hostname (leave blank to keep current):" NEW_HOSTNAME
+  fi
+
+  CUSTOM_MACHINE_BRANCH=""
+
+  if [[ "$NEW_HOSTNAME" =~ ^[0-9]+$ ]] && [ "$NEW_HOSTNAME" -ge 1 ] && [ "$NEW_HOSTNAME" -le "${#known_names[@]}" ]; then
+    local idx=$((NEW_HOSTNAME - 1))
+    NEW_HOSTNAME="${known_names[$idx]}"
+    info "Selected profile '$NEW_HOSTNAME' (branch: ${known_branches[$idx]})"
+  elif [ -n "$NEW_HOSTNAME" ]; then
+    prompt "Enter a dotfiles branch for '$NEW_HOSTNAME' (leave blank for the default branch):" CUSTOM_MACHINE_BRANCH
+  fi
 
   if [ -n "$NEW_HOSTNAME" ]; then
     info "Setting hostname to $NEW_HOSTNAME"
@@ -304,9 +333,9 @@ setup_dotfiles() {
     local DOTFILES_DIR=~/Developer/toolbox/dotfiles
     local mapping_file="$BOOTSTRAP_DIR/machine-branches.txt"
     local hostname=$(scutil --get LocalHostName)
-    local target_branch=""
+    local target_branch="${CUSTOM_MACHINE_BRANCH:-}"
 
-    if [ -f "$mapping_file" ]; then
+    if [ -z "$target_branch" ] && [ -f "$mapping_file" ]; then
       target_branch=$(grep -E "^${hostname}=" "$mapping_file" | cut -d= -f2)
     fi
 

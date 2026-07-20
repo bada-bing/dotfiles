@@ -19,10 +19,12 @@ For instructions on setting up a macOS machine, refer to the [Machine Setup Proc
 > If a machine needs to diverge from the shared dotfiles (e.g. a simpler Neovim config, no custom
 > statusbar), create a branch for it (e.g. `custom`) and add a `hostname=branch` line to
 > [`_bootstrap/machine-branches.txt`](./_bootstrap/machine-branches.txt) **on `main`** — that's what
-> makes every clone aware of the mapping. `setup_machine.sh` reads it and switches branches by
-> hostname automatically, so there's nothing to remember by hand. Rebase the branch onto `main`
-> periodically to stay in sync, and delete it (and its mapping line) once the divergence is no
-> longer needed.
+> makes every clone aware of the mapping. During the hostname step, `setup_machine.sh` lists known
+> `name=branch` entries from that file so you can pick one (hostname + branch are set together,
+> automatically) or type a new hostname and, optionally, a one-off branch for it (not written back
+> to the file — add it yourself if you want it remembered for next time). Rebase a machine's branch
+> onto `main` periodically to stay in sync, and delete it (and its mapping line) once the divergence
+> is no longer needed.
 
 ---
 
