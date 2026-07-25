@@ -38,6 +38,9 @@ source $ENV_DIR/work.aliases
 export PATH="/Applications/IntelliJ IDEA.app/Contents/MacOS:$PATH"
 export GOPATH=$HOME/Developer/src/go
 
+# QMK: keg-only ARM cross-compiler for the Corne Choc Pro (RP2040) firmware builds
+export PATH="/opt/homebrew/opt/arm-none-eabi-gcc@8/bin:/opt/homebrew/opt/arm-none-eabi-binutils/bin:$PATH"
+
 # PROMPT
 # source $ZDOTDIR/.prompt.zsh
 eval "$(/opt/homebrew/bin/starship init zsh)"
