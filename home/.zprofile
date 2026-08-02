@@ -13,6 +13,7 @@ export DOCUMENTS_DIR="$HOME/Documents"
 export TOOLBOX_DIR="$HOME/Developer/toolbox"
 export SCRIPTS_DIR="$TOOLBOX_DIR/scripts"
 export ENV_DIR="$TOOLBOX_DIR/private/env"
+export DATA_DIR="$TOOLBOX_DIR/private/data"
 export WA_1_CONFIG_DIR="$ENV_DIR/wa-1"
 export PROJECTS_PATH="$HOME/Developer/src"  # colon-separated list of project root directories
 
@@ -24,3 +25,4 @@ source ~/.orbstack/shell/init.zsh 2>/dev/null || :
 # Added by Obsidian
 export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"
 export PATH="$XDG_DATA_HOME/nvim/mason/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
