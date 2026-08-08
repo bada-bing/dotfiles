@@ -17,54 +17,40 @@ tmux_set() {
 tmux_set status-style "bg=${TN_BG},fg=${TN_FG}"
 
 # ===== WINDOW STATUS =====
-# Window state marker. @window_state is set per-window by set_window_state.sh,
-# driven from agent hooks or any wrapper script around slow work. Unset means
-# nothing is running, so nothing is drawn.
-# Style: dot-fg (glyph and coloured name) | fg (coloured name only) |
-#        dot (glyph only) | bg (highlight the name).
+# Every window renders as:  <lead> #I: #W <trail>
 #
-# fg is the default: the status bar already draws ● for the current window
-# and ◉ for the last one, so an extra glyph reads as a doubled bullet. The
-# window name simply takes the state colour instead. choose-tree has no
-# bullets of its own and keeps a circle (see TN_TREE_WIN below).
-TN_STATE_STYLE="fg"
+# Two marker slots, each owning one kind of fact, so they never collide:
+#
+#   lead   which window tmux is pointing at - ● current, ◉ last, blank
+#          otherwise. Both sit *before* the index so the indices line up
+#          down the whole bar; previously ● led and ◉ followed the index,
+#          which is what made the row look crooked.
+#   trail  whether the window needs Miki - ● red waiting, a spinning amber
+#          braille glyph busy. @window_state is set per-window by
+#          set_window_state.sh, driven from agent hooks or any wrapper
+#          around slow work.
+#
+# The trail slot is reserved even when empty. A state appearing must not
+# change the window's width, or every window to its right shifts. Braille
+# glyphs are single-width, so the spinner keeps that promise.
+#
+# Waiting stays still on purpose: motion means work is happening, and a
+# window that wants a decision is precisely one where nothing is. @spin is
+# driven by spin_window_state.sh and falls back to a static dot whenever no
+# animator is running - a frozen marker then reads as a stale one.
+TN_TRAIL_WAITING="#[fg=${TN_RED}]#[bold] ●#[default]"
+TN_TRAIL_BUSY="#[fg=${TN_YELLOW}]#[bold] #{?#{@spin},#{@spin},●}#[default]"
+TN_TRAIL_NONE="  "
 
-case "$TN_STATE_STYLE" in
-  dot)
-    TN_STATE_ON_WAITING="#[fg=${TN_RED}]●#[default] "
-    TN_STATE_ON_BUSY="#[fg=${TN_YELLOW}]●#[default] "
-    TN_STATE_OFF=""
-    ;;
-  fg)
-    TN_STATE_ON_WAITING="#[fg=${TN_RED}]#[bold]"
-    TN_STATE_ON_BUSY="#[fg=${TN_YELLOW}]#[bold]"
-    TN_STATE_OFF="#[default]"
-    ;;
-  bg)
-    # Styles are split into separate #[...] groups on purpose: a comma inside
-    # a #[...] would be read as a branch separator by the #{?...} conditional.
-    TN_STATE_ON_WAITING="#[bg=${TN_RED}]#[fg=${TN_BG}]"
-    TN_STATE_ON_BUSY="#[bg=${TN_YELLOW}]#[fg=${TN_BG}]"
-    TN_STATE_OFF="#[default]"
-    ;;
-  *)
-    # dot-fg: the bullet keeps its colour through the window name, so no
-    # reset between them.
-    TN_STATE_ON_WAITING="#[fg=${TN_RED}]#[bold]● "
-    TN_STATE_ON_BUSY="#[fg=${TN_YELLOW}]#[bold]● "
-    TN_STATE_OFF="#[default]"
-    ;;
-esac
-
-TN_STATE="#{?#{==:#{@window_state},waiting},${TN_STATE_ON_WAITING},#{?#{==:#{@window_state},busy},${TN_STATE_ON_BUSY},}}"
+TN_TRAIL="#{?#{==:#{@window_state},waiting},${TN_TRAIL_WAITING},#{?#{==:#{@window_state},busy},${TN_TRAIL_BUSY},${TN_TRAIL_NONE}}}"
 
 # Default window status (inactive)
 tmux_set window-status-style "fg=${TN_DARK5}"
-tmux_set window-status-format " ${TN_STATE}#I: #{?window_last_flag,◉ ,}#W${TN_STATE_OFF} "
+tmux_set window-status-format " #{?window_last_flag,◉, } #I: #W${TN_TRAIL} "
 
 # Current/active window
 tmux_set window-status-current-style "fg=${TN_BLUE},bold"
-tmux_set window-status-current-format " ${TN_STATE}● #I: #W${TN_STATE_OFF} "
+tmux_set window-status-current-format " ● #I: #W${TN_TRAIL} "
 
 # ===== CHOOSE-TREE (prefix + s) =====
 # tmux's own default tree format, with a window state marker added. Rows are told
