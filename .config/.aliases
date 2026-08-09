@@ -6,6 +6,8 @@ alias ta='tmux attach'
 alias td="$SCRIPTS_DIR/tmux/default_session.sh"
 # mprocs for the current working tree, refused if another session already runs it
 alias mp="$SCRIPTS_DIR/tmux/ensure_single_mprocs.sh"
+# pick a task and start working on it: journal, Taskwarrior, Timewarrior, session
+alias fcs="$SCRIPTS_DIR/work_session/fcs.sh"
 
 alias nn=pick_npm_script
 alias cat=bat
@@ -32,10 +34,6 @@ alias hgrep='history 1 | grep'
 
 alias ndx='git clean -ndX'
 alias fdx='git clean -fdX'
-
-alias sjs="$SCRIPTS_DIR/work_session/start_session.sh job"
-alias sss="$SCRIPTS_DIR/work_session/start_session.sh study"
-alias sos="$SCRIPTS_DIR/work_session/start_session.sh ops"
 
 wa-1() {
     (cd "$HOME/Developer/src/wa-1" && npm run start -- "$@")
