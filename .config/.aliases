@@ -1,9 +1,9 @@
 alias lg=lazygit
-alias tn="$SCRIPTS_DIR/local_development/tmux_sessionizer.sh"
+alias tn="$SCRIPTS_DIR/work_session/sessionizer.sh"
 alias tks='tmux kill-server'
 alias ts='current_session=$(tmux display-message -p "#S") && tmux switch-client -n && tmux kill-session -t "$current_session"'
 alias ta='tmux attach'
-alias td="$SCRIPTS_DIR/dev-env/default_session.sh"
+alias td="$SCRIPTS_DIR/tmux/default_session.sh"
 
 alias nn=pick_npm_script
 alias cat=bat
@@ -31,9 +31,9 @@ alias hgrep='history 1 | grep'
 alias ndx='git clean -ndX'
 alias fdx='git clean -fdX'
 
-alias sjs="$SCRIPTS_DIR/dev-env/start_session.sh job"
-alias sss="$SCRIPTS_DIR/dev-env/start_session.sh study"
-alias sos="$SCRIPTS_DIR/dev-env/start_session.sh ops"
+alias sjs="$SCRIPTS_DIR/work_session/start_session.sh job"
+alias sss="$SCRIPTS_DIR/work_session/start_session.sh study"
+alias sos="$SCRIPTS_DIR/work_session/start_session.sh ops"
 
 wa-1() {
     (cd "$HOME/Developer/src/wa-1" && npm run start -- "$@")

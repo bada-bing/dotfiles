@@ -10,4 +10,4 @@ export PATH="/opt/homebrew/bin:$PATH"
 # script attaches instead of trying to switch the launching client.
 unset TMUX TMUX_PANE
 
-bash "$TOOLBOX_DIR/scripts/dev-env/default_session.sh"
+bash "$TOOLBOX_DIR/scripts/tmux/default_session.sh"
