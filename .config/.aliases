@@ -4,6 +4,8 @@ alias tks='tmux kill-server'
 alias ts='current_session=$(tmux display-message -p "#S") && tmux switch-client -n && tmux kill-session -t "$current_session"'
 alias ta='tmux attach'
 alias td="$SCRIPTS_DIR/tmux/default_session.sh"
+# mprocs for the current working tree, refused if another session already runs it
+alias mp="$SCRIPTS_DIR/tmux/ensure_single_mprocs.sh"
 
 alias nn=pick_npm_script
 alias cat=bat
