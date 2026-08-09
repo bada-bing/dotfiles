@@ -16,6 +16,7 @@ export ENV_DIR="$TOOLBOX_DIR/private/env"
 export DATA_DIR="$TOOLBOX_DIR/private/data"
 export WA_1_CONFIG_DIR="$ENV_DIR/wa-1"
 export SRC_PATH="$HOME/Developer/src"  # colon-separated list of source code roots
+export LOGSEQ_GRAPH_PATH="$DOCUMENTS_DIR/Logseq/KB"  # graph root: pages/ and journals/
 
 # CONFIGURATION LOCATIONS
 export GIT_CONFIG_GLOBAL="$XDG_CONFIG_HOME/git/.gitconfig"

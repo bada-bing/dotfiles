@@ -17,7 +17,7 @@ vim.api.nvim_create_autocmd("FileType", {
 -- Falls back to built-in gf when the cursor is not on either.
 -- Opening a page that doesn't exist yet gives a new buffer, so saving it
 -- creates the page — same as following a link to a new page in Logseq.
-local logseq_kb = vim.fn.expand("~/Documents/Logseq/KB")
+local logseq_kb = vim.env.LOGSEQ_GRAPH_PATH or vim.fn.expand("~/Documents/Logseq/KB")
 
 -- Journal links use Logseq's default title format, e.g. [[Jul 12th, 2026]],
 -- and live at journals/2026_07_12.md. Returns nil for non-date link names.
