@@ -28,6 +28,8 @@ setopt appendhistory
 
 # HOMEBREW
 export HOMEBREW_AUTO_UPDATE_SECS=7200
+# Turn off ask mode, the default for install and upgrade since 6.0.
+export HOMEBREW_NO_ASK=1
 
 # ALIASES
 alias d='dirs -v'
