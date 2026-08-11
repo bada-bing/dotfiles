@@ -6,8 +6,8 @@ alias ta='tmux attach'
 alias td="$SCRIPTS_DIR/tmux/default_session.sh"
 # mprocs for the current working tree, refused if another session already runs it
 alias mp="$SCRIPTS_DIR/tmux/ensure_single_mprocs.sh"
-# pick a task and start working on it: journal, Taskwarrior, Timewarrior, session
-alias fcs="$SCRIPTS_DIR/work_session/fcs.sh"
+# what is being recorded now; `work start` picks something and begins recording it
+alias work="$SCRIPTS_DIR/work_session/work.sh"
 
 alias nn=pick_npm_script
 alias cat=bat
