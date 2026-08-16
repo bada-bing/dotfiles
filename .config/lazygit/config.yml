@@ -25,9 +25,9 @@ gui:
       - "#eed49f"
   showRandomTip: true
 git:
-  pagers:
+  diffRenderers:
     - colorArg: never
-      pager: delta --dark --paging=never
+      command: delta --dark --paging=never
       # useConfig: true (it uses default git config, which uses pager for delta which breaks lazygit display of git log of bigger commits)
 # os:
 #   openCommand: "code --goto -- {{filename}}:{{line}}"
