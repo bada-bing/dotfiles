@@ -1,5 +1,8 @@
 font-size = 19
-font-feature = "liga"
+# Disable all ligatures so every character renders distinctly
+font-feature = "-liga"
+font-feature = "-dlig"
+font-feature = "-calt"
 
 theme = "TokyoNight Night"
 background-opacity = 1.0
