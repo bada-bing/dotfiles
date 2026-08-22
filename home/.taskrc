@@ -1,5 +1,5 @@
 data.location=/Users/miki/.task
-news.version=3.4.2
+news.version=3.5.0
 
 # Custom Urgency Modifier
 urgency.user.tag.todo.coefficient=-3.0
