@@ -8,7 +8,6 @@ $directory\
 [](fg:#769ff0 bg:#394260)\
 $git_branch\
 $git_state\
-$git_status\
 $git_commit\
 [](fg:#394260 bg:#212736)\
 $nodejs\
@@ -60,10 +59,6 @@ am_or_rebase = "AM/REBASE"
 style = "fg:#2ac3de bg:#394260"
 format = '[$state( $progress_current/$progress_total)]($style)'
 disabled = false
-
-[git_status]
-style = "bg:#394260"
-format = '[[($all_status$ahead_behind )](fg:#2ac3de bg:#394260)]($style)'
 
 [git_commit]
 commit_hash_length = 7
