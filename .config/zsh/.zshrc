@@ -92,13 +92,21 @@ function zsh_autosuggest_bindings() {
 }
 zvm_after_init_commands+=(zsh_autosuggest_bindings)
 
+# COMPLETION SYSTEM
+# compinit defines compdef and loads the _* completion functions.
+# Full run once a day (picks up new completions), cached otherwise.
+autoload -Uz compinit
+if [[ -n $ZDOTDIR/.zcompdump(#qN.mh+24) ]]; then
+  compinit
+  touch $ZDOTDIR/.zcompdump   # compinit leaves mtime alone when nothing changed
+else
+  compinit -C
+fi
+
 # The next line updates PATH for the Google Cloud SDK.
 # if [ -f '~/google-cloud-sdk/path.zsh.inc' ]; then . '~/google-cloud-sdk/path.zsh.inc'; fi
 source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
 
-# # The next line enables shell coømmand completion for gcloud.
-# if [ -f '~/google-cloud-sdk/completion.zsh.inc' ]; then . '~/google-cloud-sdk/completion.zsh.inc'; fi
-source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
 
 # FZF & FD Commands (does not work properly on Mac)
 export FZF_DEFAULT_COMMAND="fd ." #  "." represents the "catch all" pattern (basically if I am not mistaken, it searches the current directory)
