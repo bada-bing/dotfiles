@@ -15,7 +15,7 @@ macos-option-as-alt = true
 confirm-close-surface = false
 
 # Drop to login shell after tmux exits
-command = /bin/bash -lc "~/.config/ghostty/attachTmux.sh; exec -l $SHELL"
+command = /bin/zsh -lc "~/.config/ghostty/attachTmux.sh; exec -l $SHELL"
 
 
 keybind = shift+enter=text:\x1b\r
