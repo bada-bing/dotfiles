@@ -1,3 +1,5 @@
+typeset -U path PATH # keep only the first copy of each PATH entry
+
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # XDG BASE DIRECTORY
