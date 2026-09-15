@@ -99,7 +99,6 @@ source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
 # # The next line enables shell coømmand completion for gcloud.
 # if [ -f '~/google-cloud-sdk/completion.zsh.inc' ]; then . '~/google-cloud-sdk/completion.zsh.inc'; fi
 source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
-source <(kubectl completion zsh) # https://kubernetes.io/docs/reference/kubectl/generated/kubectl_completion/
 
 # FZF & FD Commands (does not work properly on Mac)
 export FZF_DEFAULT_COMMAND="fd ." #  "." represents the "catch all" pattern (basically if I am not mistaken, it searches the current directory)
