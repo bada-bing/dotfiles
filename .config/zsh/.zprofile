@@ -2,13 +2,6 @@ typeset -U path PATH # keep only the first copy of each PATH entry
 
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
-# XDG BASE DIRECTORY
-export XDG_CONFIG_HOME="$HOME/.config" # alternative would be `~/Library/ApplicationSupport`
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_CACHE_HOME="$HOME/.cache"
-
-export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
-
 # ESSENTIAL DIRECTORIES
 export ICLOUD_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs"
 export DOCUMENTS_DIR="$HOME/Documents"
