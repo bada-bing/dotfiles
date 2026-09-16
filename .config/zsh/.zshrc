@@ -5,13 +5,14 @@ export VISUAL="nvim --clean"
 
 # ZSH ENVIRONMENT VARIABLES
 # export HISTFILE="$ZDOTDIR/.zhistory" # For some reason does not work as expected
-export HISTSIZE=2000  # Maximum events for internal memory
-export SAVEHIST=10000 # Maximum events in history file
+export HISTSIZE=50000  # Maximum events for internal memory
+export SAVEHIST=50000 # Maximum events in history file
 
 export MANPAGER='nvim +Man!' # + ensures that the NeoVim will open the output of the Man command in a buffer, and ! is forcing the command to execute
 
 # ZSH OPTIONS
 setopt HIST_SAVE_NO_DUPS # Do not write duplicate event to the history file
+setopt INC_APPEND_HISTORY # Write each command as it runs, not at shell exit
 
 ### History Search Navigation
 # In case it does not work, check this page: https://unix.stackexchange.com/questions/97843/how-can-i-search-history-with-text-already-entered-at-the-prompt-in-zsh
