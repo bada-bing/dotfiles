@@ -6,6 +6,8 @@ alias ta='tmux attach'
 alias td="$SCRIPTS_DIR/tmux/default_session.sh"
 # what is being recorded now; `work start` picks something and begins recording it
 alias work="$SCRIPTS_DIR/work_session/work.sh"
+# capture an errand into today's journal, or into the backlog with --backlog
+alias errand="$SCRIPTS_DIR/errands/errand.sh"
 
 alias nn=pick_npm_script
 alias cat=bat
