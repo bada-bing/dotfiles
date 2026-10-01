@@ -97,12 +97,17 @@ zvm_after_init_commands+=(zsh_autosuggest_bindings)
 # compinit defines compdef and loads the _* completion functions.
 # Full run once a day (picks up new completions), cached otherwise.
 autoload -Uz compinit
-if [[ -n $ZDOTDIR/.zcompdump(#qN.mh+24) ]]; then
-  compinit
-  touch $ZDOTDIR/.zcompdump   # compinit leaves mtime alone when nothing changed
-else
-  compinit -C
-fi
+() {
+  # (#q) is a glob qualifier, and without extended_glob it is literal text,
+  # so the test would be true on every start.
+  setopt local_options extended_glob
+  if [[ -n $ZDOTDIR/.zcompdump(#qN.mh+24) ]]; then
+    compinit
+    touch $ZDOTDIR/.zcompdump   # compinit leaves mtime alone when nothing changed
+  else
+    compinit -C
+  fi
+}
 
 # The next line updates PATH for the Google Cloud SDK.
 # if [ -f '~/google-cloud-sdk/path.zsh.inc' ]; then . '~/google-cloud-sdk/path.zsh.inc'; fi
