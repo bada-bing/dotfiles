@@ -1,5 +1,6 @@
 cask "popclip"
 cask "keepassxc"
+cask "logseq-og"
 cask "logseq"
 cask "raycast"
 cask "meetingbar"
