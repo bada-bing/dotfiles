@@ -22,3 +22,7 @@ source ~/.orbstack/shell/init.zsh 2>/dev/null || :
 export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"
 export PATH="$XDG_DATA_HOME/nvim/mason/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+
+# mise shims, so a login shell that never runs .zshrc (scripts, `tmux new-window "<cmd>"`)
+# still resolves node and pnpm per directory. The .zshrc hook takes over interactively.
+eval "$(/opt/homebrew/bin/mise activate zsh --shims)"
