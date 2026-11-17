@@ -7,3 +7,7 @@ export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+
+# ~/.local/bin is needed by a shell that is no login shell too: an ssh:// host
+# of Rex runs `rex` over SSH, which reads neither .zprofile nor .zshrc
+export PATH="$HOME/.local/bin:$PATH"
