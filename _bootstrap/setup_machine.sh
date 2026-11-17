@@ -456,9 +456,9 @@ bootstrap_env_folder # pull private files from icloud (e.g., git configuration)
 ensure_github_ssh_access
 set_hostname
 setup_homebrew
+create_xdg_directories
 setup_dotfiles
 install_homebrew_packages
-create_xdg_directories
 set_system_settings
 set_application_settings
 
