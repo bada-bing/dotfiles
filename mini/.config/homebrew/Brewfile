@@ -1,0 +1,7 @@
+brew "gh"
+brew "openssl@3"
+brew "tmux"
+brew "wget"
+cask "claude-code"
+cask "orbstack"
+cask "tailscale-app"
