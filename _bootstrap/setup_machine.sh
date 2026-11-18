@@ -68,9 +68,7 @@ print_ssh_key_instructions() {
 
 # --- Steps ---
 
-bootstrap_env_folder() {
-  header "Checking toolbox/private folder setup"
-
+restore_private_env() {
   local TOOLBOX_PRIVATE_DIR="$HOME/Developer/toolbox/private"
   local TOOLBOX_ENV_DIR="$TOOLBOX_PRIVATE_DIR/env"
   local ICLOUD_BAK_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/BAK"
@@ -112,9 +110,7 @@ bootstrap_env_folder() {
   fi
 }
 
-ensure_github_ssh_access() {
-  header "Checking for GitHub SSH access"
-
+setup_github_ssh() {
   local key_path="$HOME/.ssh/id_ed25519"
   local new_key_generated=false
 
@@ -205,9 +201,7 @@ ensure_github_ssh_access() {
   fi
 }
 
-setup_homebrew() {
-  header "Setting up Homebrew"
-
+install_homebrew() {
   # Check for Homebrew and install it if necessary
   if ! command -v brew &> /dev/null; then
     info "Installing Homebrew"
@@ -230,8 +224,6 @@ setup_homebrew() {
 }
 
 clone_dotfiles() {
-  header "Cloning dotfiles"
-
   if ! command -v git &> /dev/null; then
     warn "Git not found. It comes with the Xcode Command Line Tools, which the Homebrew installation installs."
     exit 1
@@ -288,8 +280,6 @@ clone_dotfiles() {
 }
 
 set_hostname() {
-  header "Setting hostname"
-
   local computer_name=$(scutil --get ComputerName)
   local local_host_name=$(scutil --get LocalHostName)
   local host_name=$(scutil --get HostName)
@@ -342,9 +332,7 @@ set_hostname() {
   fi
 }
 
-create_xdg_directories() {
-  header "Creating XDG (Cross-Desktop Group) directories"
-
+create_xdg_dirs() {
   # related: https://stackoverflow.com/questions/3373948/equivalents-of-xdg-config-home-and-xdg-data-home-on-mac-os-x
   # Created before the dotfiles are linked: stow links a missing ~/.config as one symlink into the
   # repository, and every file a tool writes there would then land in the dotfiles.
@@ -361,8 +349,6 @@ create_xdg_directories() {
 }
 
 link_dotfiles() {
-  header "Linking dotfiles"
-
   local machine=$(machine_name)
   local machine_dir="$DOTFILES_DIR/$machine"
 
@@ -380,9 +366,7 @@ link_dotfiles() {
   success "Dotfiles linked."
 }
 
-install_homebrew_packages() {
-  header "Installing Homebrew packages from Brewfile"
-
+install_packages() {
   local brewfile="$DOTFILES_DIR/$(machine_name)/.config/homebrew/Brewfile"
 
   if [ -f "$brewfile" ]; then
@@ -395,8 +379,6 @@ install_homebrew_packages() {
 }
 
 set_system_settings() {
-  header "Setting system settings"
-
   "$BOOTSTRAP_DIR/set_macos_defaults.sh"
   success "Finished macOS defaults"
 
@@ -408,9 +390,7 @@ set_system_settings() {
   success "macOS settings applied and manual steps completed"
 }
 
-set_application_settings() {
-  header "Setting application settings"
-
+set_app_settings() {
   info "Manual Action Required: Configure Application Settings"
   info "Search for 'Application Settings' in RemNote for the details."
   info ""
@@ -423,7 +403,118 @@ set_application_settings() {
   success "Finished application settings"
 }
 
+# --- Running the steps ---
+
+# The steps, in the order they run. Each is the function of that name.
+STEPS=(
+  restore_private_env # pull private files from icloud (e.g., git configuration)
+  setup_github_ssh
+  install_homebrew
+  clone_dotfiles
+  set_hostname
+  create_xdg_dirs
+  link_dotfiles
+  install_packages
+  set_system_settings
+  set_app_settings
+)
+
+usage() {
+  echo "Usage: setup_machine.sh [--from <step>] [--to <step>] [--list]"
+  echo
+  echo "Runs the steps in order, all of them by default."
+  echo "  --from <step>  start at this step"
+  echo "  --to <step>    stop after this step"
+  echo "  --list         show the steps, in order"
+  echo
+  echo "Both ends include the named step, so --from x --to x runs only x."
+}
+
+die() {
+  echo -e "error: ${1}" >&2
+  exit 1
+}
+
+list_steps() {
+  local i
+  for i in "${!STEPS[@]}"; do
+    printf "  %2d) %s\n" "$((i + 1))" "${STEPS[$i]}"
+  done
+}
+
+# Prints the position of a step, counting from 1, or nothing when there is no such step.
+step_index() {
+  local i
+  for i in "${!STEPS[@]}"; do
+    if [ "${STEPS[$i]}" = "$1" ]; then
+      echo "$((i + 1))"
+      return
+    fi
+  done
+}
+
+# Sets FROM_INDEX and TO_INDEX, refusing an unknown step or a reversed range.
+parse_args() {
+  local from_step="" to_step=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --from)
+        [ -n "${2:-}" ] || die "--from needs a step. Run --list to see the steps."
+        from_step="$2"
+        shift 2
+        ;;
+      --to)
+        [ -n "${2:-}" ] || die "--to needs a step. Run --list to see the steps."
+        to_step="$2"
+        shift 2
+        ;;
+      --list)
+        list_steps
+        exit 0
+        ;;
+      -h|--help)
+        usage
+        exit 0
+        ;;
+      *)
+        die "unknown argument '$1'. Run --help for the usage."
+        ;;
+    esac
+  done
+
+  FROM_INDEX=1
+  TO_INDEX=${#STEPS[@]}
+
+  if [ -n "$from_step" ]; then
+    FROM_INDEX=$(step_index "$from_step")
+    [ -n "$FROM_INDEX" ] || die "unknown step '$from_step'. Run --list to see the steps."
+  fi
+
+  if [ -n "$to_step" ]; then
+    TO_INDEX=$(step_index "$to_step")
+    [ -n "$TO_INDEX" ] || die "unknown step '$to_step'. Run --list to see the steps."
+  fi
+
+  if [ "$TO_INDEX" -lt "$FROM_INDEX" ]; then
+    die "--to $to_step ($TO_INDEX) comes before --from $from_step ($FROM_INDEX). Run --list to see the order."
+  fi
+}
+
+run_steps() {
+  local i step
+  for i in "${!STEPS[@]}"; do
+    step="${STEPS[$i]}"
+    if [ "$((i + 1))" -ge "$FROM_INDEX" ] && [ "$((i + 1))" -le "$TO_INDEX" ]; then
+      header "$((i + 1))/${#STEPS[@]} $step"
+      "$step"
+    fi
+  done
+}
+
 # --- Main Execution ---
+
+parse_args "$@"
 
 # Ensure the OS is a macOS
 if [ "$(uname -s)" != "Darwin" ]; then
@@ -431,16 +522,11 @@ if [ "$(uname -s)" != "Darwin" ]; then
 	exit 1
 fi
 
-bootstrap_env_folder # pull private files from icloud (e.g., git configuration)
-ensure_github_ssh_access
-setup_homebrew
-clone_dotfiles
-set_hostname
-create_xdg_directories
-link_dotfiles
-install_homebrew_packages
-set_system_settings
-set_application_settings
+run_steps
 
 header "DONE"
-success "Bootstrap script completed successfully!"
+if [ "$FROM_INDEX" -eq 1 ] && [ "$TO_INDEX" -eq ${#STEPS[@]} ]; then
+  success "Bootstrap script completed successfully!"
+else
+  success "Finished steps ${FROM_INDEX} to ${TO_INDEX}."
+fi
