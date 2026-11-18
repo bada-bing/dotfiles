@@ -39,6 +39,9 @@ setup_machine.sh --list                                   # the steps, in order
 setup_machine.sh --to set_hostname                        # from the start through `set_hostname`
 setup_machine.sh --from link_dotfiles                     # from `link_dotfiles` to the end
 setup_machine.sh --from link_dotfiles --to link_dotfiles  # only `link_dotfiles`
+setup_machine.sh --dry-run                                # print what would change, change nothing
 ```
 
 Both ends include the named step. An unknown step, or a `--to` that comes before the `--from`, is refused before any step runs.
+
+`--dry-run` prints every command that would change the machine instead of running it. It still asks for values, such as the hostname, since what it prints depends on them, and it does not wait at the prompts that only wait for a manual action.

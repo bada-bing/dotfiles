@@ -14,6 +14,7 @@ DOTFILES_DIR="$HOME/Developer/toolbox/dotfiles"
 BOOTSTRAP_DIR="$DOTFILES_DIR/_bootstrap"
 
 # --- State ---
+DRY_RUN=false
 MACHINE="" # the machine's folder in the dotfiles, set by set_hostname
 
 header() {
@@ -32,6 +33,10 @@ warn() {
     echo -e "  ${C_YELLOW}✗${C_RESET} ${1}"
 }
 
+would_run() {
+  echo -e "  ${C_YELLOW}would run:${C_RESET} ${1}"
+}
+
 prompt() {
   # The space after the prompt is intentional for better readability
   read -p "  _ ${1} " "${@:2}"
@@ -39,6 +44,24 @@ prompt() {
 
 prompt_secret() {
   read -s -p "  _ ${1} " "${@:2}"
+}
+
+# Waits for Enter after a manual action. A dry run does not wait.
+pause() {
+  if [ "$DRY_RUN" = true ]; then
+    info "(dry run, not waiting) ${1}"
+  else
+    prompt "${1}"
+  fi
+}
+
+# Runs a command that changes the machine. A dry run prints it instead.
+run() {
+  if [ "$DRY_RUN" = true ]; then
+    would_run "$(printf '%q ' "$@")"
+  else
+    "$@"
+  fi
 }
 
 # The machine whose folder is linked: the one chosen in set_hostname, or else this machine's LocalHostName.
@@ -106,7 +129,7 @@ restore_private_env() {
     echo "mkdir -p \"$TOOLBOX_PRIVATE_DIR\""
     echo "cp -a \"$ICLOUD_BAK_DIR/.\" \"$TOOLBOX_PRIVATE_DIR/\""
     echo
-    prompt "After running the command (or if you want to skip), press Enter to continue the setup script..."
+    pause "After running the command (or if you want to skip), press Enter to continue the setup script..."
   fi
 }
 
@@ -115,38 +138,44 @@ setup_github_ssh() {
   local new_key_generated=false
 
   # Ensure .ssh directory exists
-  mkdir -p "$HOME/.ssh"
-  chmod 700 "$HOME/.ssh"
+  if [ ! -d "$HOME/.ssh" ]; then
+    run mkdir -p "$HOME/.ssh"
+  fi
+  run chmod 700 "$HOME/.ssh"
 
   if [ ! -f "$key_path" ]; then
     info "No SSH key found. Generating a new one."
 
-    prompt "Enter your GitHub email address:" user_email
+    if [ "$DRY_RUN" = true ]; then
+      run ssh-keygen -t ed25519 -C "<your GitHub email>" -f "$key_path" -N "<passphrase>"
+    else
+      prompt "Enter your GitHub email address:" user_email
 
-    if [ -z "$user_email" ]; then
-      warn "Email address cannot be empty. Exiting."
-      exit 1
+      if [ -z "$user_email" ]; then
+        warn "Email address cannot be empty. Exiting."
+        exit 1
+      fi
+
+      local passphrase=""
+      while true; do
+        prompt_secret "Enter a passphrase for your new SSH key (leave empty for no passphrase):" passphrase
+        echo
+        if [ -z "$passphrase" ]; then
+          info "Creating key without a passphrase."
+          break
+        fi
+        prompt_secret "Confirm passphrase:" passphrase_confirm
+        echo
+        if [ "$passphrase" = "$passphrase_confirm" ]; then
+          info "Passphrase confirmed."
+          break
+        else
+          warn "Passphrases do not match. Please try again."
+        fi
+      done
+
+      ssh-keygen -t ed25519 -C "$user_email" -f "$key_path" -N "$passphrase"
     fi
-
-    local passphrase=""
-    while true; do
-      prompt_secret "Enter a passphrase for your new SSH key (leave empty for no passphrase):" passphrase
-      echo
-      if [ -z "$passphrase" ]; then
-        info "Creating key without a passphrase."
-        break
-      fi
-      prompt_secret "Confirm passphrase:" passphrase_confirm
-      echo
-      if [ "$passphrase" = "$passphrase_confirm" ]; then
-        info "Passphrase confirmed."
-        break
-      else
-        warn "Passphrases do not match. Please try again."
-      fi
-    done
-
-    ssh-keygen -t ed25519 -C "$user_email" -f "$key_path" -N "$passphrase"
     new_key_generated=true
 
     success "New SSH key generated."
@@ -158,20 +187,28 @@ setup_github_ssh() {
   # The `ssh-add -l` command will return a non-zero exit code if the agent is not running.
   if ! ssh-add -l &> /dev/null; then
     info "ssh-agent not running. Starting a new one for this script session..."
-    eval "$(ssh-agent -s)"
+    if [ "$DRY_RUN" = true ]; then
+      would_run "eval \"\$(ssh-agent -s)\""
+    else
+      eval "$(ssh-agent -s)"
+    fi
   fi
 
   # Add the key to the agent if it's not already loaded.
   # We check for the key's filename in the output of ssh-add -l.
   if ! ssh-add -l | grep -q "id_ed25519"; then
     info "Adding SSH identity to the agent..."
-    ssh-add --apple-use-keychain "$key_path"
+    run ssh-add --apple-use-keychain "$key_path"
   else
     info "SSH identity is already loaded in the agent."
   fi
 
   if [ "$new_key_generated" = true ]; then
-    pbcopy < "${key_path}.pub"
+    if [ "$DRY_RUN" = true ]; then
+      would_run "pbcopy < ${key_path}.pub"
+    else
+      pbcopy < "${key_path}.pub"
+    fi
     success "Your new public SSH key has been copied to the clipboard."
     info "Add key to your GitHub account."
     echo
@@ -189,12 +226,17 @@ setup_github_ssh() {
   fi
 
   echo
-  prompt "Press Enter to continue once your SSH key is configured on GitHub."
+  pause "Press Enter to continue once your SSH key is configured on GitHub."
+
+  # accept-new adds GitHub's host key to known_hosts; a dry run only checks against the keys already known.
+  local host_key_checking="accept-new"
+  if [ "$DRY_RUN" = true ]; then
+    host_key_checking="yes"
+  fi
 
   info "Verifying SSH connection to GitHub..."
-  # Use -o StrictHostKeyChecking=accept-new to automatically add GitHub's host key
   # The 2>&1 redirects stderr to stdout to grep the success message
-  if ssh -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+  if ssh -o StrictHostKeyChecking="$host_key_checking" -T git@github.com < /dev/null 2>&1 | grep -q "successfully authenticated"; then
     success "GitHub SSH connection successful."
   else
     warn "Could not verify GitHub SSH connection. The script will continue, but you may face issues with private repositories."
@@ -205,19 +247,23 @@ install_homebrew() {
   # Check for Homebrew and install it if necessary
   if ! command -v brew &> /dev/null; then
     info "Installing Homebrew"
-    # The brew installation script takes care of Xcode Command Line Tools (CLT)
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    if [ "$DRY_RUN" = true ]; then
+      would_run "the Homebrew install script, https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
+    else
+      # The brew installation script takes care of Xcode Command Line Tools (CLT)
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-    # Ensure Homebrew is in the PATH for the current script execution
-    eval "$(/opt/homebrew/bin/brew shellenv)"
+      # Ensure Homebrew is in the PATH for the current script execution
+      eval "$(/opt/homebrew/bin/brew shellenv)"
+    fi
   else
     info "Homebrew is already installed. Updating"
-    brew update # ensure latest formula/cask metadata before `brew bundle`
+    run brew update # ensure latest formula/cask metadata before `brew bundle`
   fi
 
   if ! command -v stow &> /dev/null; then
     info "Installing GNU Stow (required to symlink dotfiles)"
-    brew install stow
+    run brew install stow
   fi
 
   success "Homebrew setup complete"
@@ -231,7 +277,7 @@ clone_dotfiles() {
 
   if [ -d "$DOTFILES_DIR" ]; then
     info "Dotfiles directory '$DOTFILES_DIR' already exists. Pulling latest changes."
-    git -C "$DOTFILES_DIR" pull || { warn "Failed to pull dotfiles updates."; exit 1; }
+    run git -C "$DOTFILES_DIR" pull || { warn "Failed to pull dotfiles updates."; exit 1; }
   else
     info "Dotfiles directory not found. Cloning repository."
 
@@ -273,7 +319,7 @@ clone_dotfiles() {
         DOTFILES_URL="$DOTFILES_INPUT"
     fi
     info "Cloning dotfiles repository from $DOTFILES_URL."
-    git clone "$DOTFILES_URL" "$DOTFILES_DIR" || { warn "Failed to clone dotfiles repository."; exit 1; }
+    run git clone "$DOTFILES_URL" "$DOTFILES_DIR" || { warn "Failed to clone dotfiles repository."; exit 1; }
   fi
 
   success "Dotfiles are in $DOTFILES_DIR"
@@ -318,9 +364,9 @@ set_hostname() {
 
   if [ -n "$new_hostname" ]; then
     info "Setting hostname to $new_hostname"
-    sudo scutil --set LocalHostName "$new_hostname"
-    sudo scutil --set ComputerName "$new_hostname"
-    sudo scutil --set HostName "$new_hostname"
+    run sudo scutil --set LocalHostName "$new_hostname"
+    run sudo scutil --set ComputerName "$new_hostname"
+    run sudo scutil --set HostName "$new_hostname"
     MACHINE="$new_hostname"
     success "Hostname set to $new_hostname"
   else
@@ -340,7 +386,7 @@ create_xdg_dirs() {
     if [ -d "$dir" ]; then
       info "Directory $dir already exists."
     else
-      mkdir -p "$dir"
+      run mkdir -p "$dir"
       info "Created directory $dir."
     fi
   done
@@ -358,7 +404,7 @@ link_dotfiles() {
   fi
 
   info "Linking the folder '$machine' into $HOME"
-  stow -v -d "$DOTFILES_DIR" -t "$HOME" "$machine" || {
+  run stow -v -d "$DOTFILES_DIR" -t "$HOME" "$machine" || {
     warn "Failed to link the folder '$machine'. Resolve any conflicting files at the target, then re-run."
     exit 1
   }
@@ -371,7 +417,7 @@ install_packages() {
 
   if [ -f "$brewfile" ]; then
     info "Installing the packages in $brewfile"
-    brew bundle --file="$brewfile"
+    run brew bundle --file="$brewfile"
     success "Homebrew package installation complete"
   else
     warn "No Brewfile at $brewfile. Skipping."
@@ -379,13 +425,13 @@ install_packages() {
 }
 
 set_system_settings() {
-  "$BOOTSTRAP_DIR/set_macos_defaults.sh"
+  run "$BOOTSTRAP_DIR/set_macos_defaults.sh"
   success "Finished macOS defaults"
 
   # Manual System Settings Configuration
   info "Manual Action Required: Configure System Settings"
   info "This applies to settings which cannot be configured via 'defaults' commands."
-  prompt "Once you are done, press Enter to continue..."
+  pause "Once you are done, press Enter to continue..."
 
   success "macOS settings applied and manual steps completed"
 }
@@ -399,7 +445,7 @@ set_app_settings() {
   info "  - KeePassXC  (keeps it accessible from any Space; fixes auto-type across Spaces)"
   info "  - Apple Notes  (quick capture from any Space)"
   info "  - Reminders  (surface reminders without Space-switching)"
-  prompt "Once you are done, press Enter to continue..."
+  pause "Once you are done, press Enter to continue..."
   success "Finished application settings"
 }
 
@@ -420,11 +466,12 @@ STEPS=(
 )
 
 usage() {
-  echo "Usage: setup_machine.sh [--from <step>] [--to <step>] [--list]"
+  echo "Usage: setup_machine.sh [--from <step>] [--to <step>] [--dry-run] [--list]"
   echo
   echo "Runs the steps in order, all of them by default."
   echo "  --from <step>  start at this step"
   echo "  --to <step>    stop after this step"
+  echo "  --dry-run      print the commands that would change the machine instead of running them"
   echo "  --list         show the steps, in order"
   echo
   echo "Both ends include the named step, so --from x --to x runs only x."
@@ -453,7 +500,7 @@ step_index() {
   done
 }
 
-# Sets FROM_INDEX and TO_INDEX, refusing an unknown step or a reversed range.
+# Sets FROM_INDEX, TO_INDEX and DRY_RUN, refusing an unknown step or a reversed range.
 parse_args() {
   local from_step="" to_step=""
 
@@ -468,6 +515,10 @@ parse_args() {
         [ -n "${2:-}" ] || die "--to needs a step. Run --list to see the steps."
         to_step="$2"
         shift 2
+        ;;
+      --dry-run)
+        DRY_RUN=true
+        shift
         ;;
       --list)
         list_steps
@@ -520,6 +571,10 @@ parse_args "$@"
 if [ "$(uname -s)" != "Darwin" ]; then
 	warn "This script is only for macOS"
 	exit 1
+fi
+
+if [ "$DRY_RUN" = true ]; then
+  header "DRY RUN: nothing on this machine is changed"
 fi
 
 run_steps
