@@ -330,7 +330,7 @@ clone_dotfiles() {
 set_hostname() {
   local computer_name=$(scutil --get ComputerName)
   local local_host_name=$(scutil --get LocalHostName)
-  local host_name=$(scutil --get HostName)
+  local host_name=$(scutil --get HostName 2>/dev/null || echo "not set")
 
   if [ "$computer_name" != "$local_host_name" ] || [ "$local_host_name" != "$host_name" ]; then
     warn "Hostname inconsistency detected:"
