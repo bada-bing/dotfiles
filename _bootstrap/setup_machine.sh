@@ -398,11 +398,31 @@ link_dotfiles() {
     exit 1
   fi
 
+  # The check after linking reads git, so the folder has to start out as committed.
+  if [ -n "$(git -C "$DOTFILES_DIR" status --porcelain -- "$machine")" ]; then
+    warn "The folder '$machine' has uncommitted changes. Commit or discard them, then re-run. Exiting."
+    exit 1
+  fi
+
+  # --adopt moves a file already in place into the machine's folder and links it back,
+  # so a file in the way is kept instead of refused, and git shows whether it differed.
   info "Linking the folder '$machine' into $HOME"
-  run stow -v -d "$DOTFILES_DIR" -t "$HOME" "$machine" || {
-    warn "Failed to link the folder '$machine'. Resolve any conflicting files at the target, then re-run."
+  run stow -v --adopt -d "$DOTFILES_DIR" -t "$HOME" "$machine" || {
+    warn "Failed to link the folder '$machine'. Exiting."
     exit 1
   }
+
+  local differing
+  differing=$(git -C "$DOTFILES_DIR" status --porcelain -- "$machine")
+  if [ -n "$differing" ]; then
+    warn "Files already on this machine replaced their versions in the folder '$machine':"
+    echo "$differing" | sed 's/^/      /'
+    info "See what differs:          git -C $DOTFILES_DIR diff -- $machine"
+    info "Keep this machine's files: commit them"
+    info "Keep the dotfiles' files:  git -C $DOTFILES_DIR restore -- $machine"
+    warn "Then re-run. Exiting."
+    exit 1
+  fi
 
   success "Dotfiles linked."
 }

@@ -21,7 +21,7 @@ Runs the following steps in order, pausing for manual confirmation where a step 
 4. **`clone_dotfiles`** — clones this repo to `~/Developer/toolbox/dotfiles`, or pulls it when it is already there.
 5. **`set_hostname`** — reconciles `ComputerName`/`LocalHostName`/`HostName` and offers the machines that have a folder in the dotfiles. The hostname names the machine's folder.
 6. **`create_xdg_dirs`** — ensures `~/.config`, `~/.local/share`, `~/.cache` exist, before anything is linked into them.
-7. **`link_dotfiles`** — links the machine's folder into the home directory: `stow -t ~ <machine>`.
+7. **`link_dotfiles`** — links the machine's folder into the home directory: `stow --adopt -t ~ <machine>`. A file already in place is taken into the folder, and the step stops if it differed.
 8. **`install_packages`** — runs `brew bundle` against the machine's Brewfile, `<machine>/.config/homebrew/Brewfile`.
 9. **`set_system_settings`** — applies `set_macos_defaults.sh`, then prompts for manual System Settings changes that can't be scripted.
 10. **`set_app_settings`** — prompts for manual per-app settings (documented in RemNote, plus a few noted directly in the script).
