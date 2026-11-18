@@ -12,6 +12,8 @@ C_RESET="\033[0m"
 # --- Path Constants ---
 DOTFILES_DIR="$HOME/Developer/toolbox/dotfiles"
 BOOTSTRAP_DIR="$DOTFILES_DIR/_bootstrap"
+PRIVATE_DIR="$HOME/Developer/toolbox/private"
+ICLOUD_PRIVATE_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/BAK/toolbox/private" # the central copy of PRIVATE_DIR
 
 # --- State ---
 DRY_RUN=false
@@ -91,43 +93,36 @@ print_ssh_key_instructions() {
 
 # --- Steps ---
 
+# Lists every file under a folder as "<path> <size> <modified>", relative to the folder.
+# stat reads the size from the file's metadata, so a file iCloud has not downloaded yet counts at its real size.
+list_files() {
+  (cd "$1" && find . -type f ! -name .DS_Store -exec stat -f '%N %z %Sm' -t '%Y-%m-%d %H:%M' {} + | sort)
+}
+
 restore_private_env() {
-  local TOOLBOX_PRIVATE_DIR="$HOME/Developer/toolbox/private"
-  local TOOLBOX_ENV_DIR="$TOOLBOX_PRIVATE_DIR/env"
-  local ICLOUD_BAK_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/BAK"
+  if [ ! -d "$ICLOUD_PRIVATE_DIR" ]; then
+    warn "The iCloud backup of the private folder is not at '$ICLOUD_PRIVATE_DIR'. Exiting."
+    exit 1
+  fi
 
-  # Check if the private toolbox folder is already present.
-  if [ -d "$TOOLBOX_ENV_DIR" ]; then
-    local ICLOUD_TOOLBOX_ENV_DIR="$ICLOUD_BAK_DIR/toolbox/env"
+  if [ -d "$PRIVATE_DIR" ]; then
+    # The backup in iCloud is the central copy; the local folder has to match it file by file.
+    local differences
+    differences=$(diff <(list_files "$PRIVATE_DIR") <(list_files "$ICLOUD_PRIVATE_DIR") || true)
 
-    if [ -d "$ICLOUD_TOOLBOX_ENV_DIR" ]; then
-      TOOLBOX_SIZE=$(du -sh "$TOOLBOX_ENV_DIR" | awk '{print $1}')
-      ICLOUD_TOOLBOX_SIZE=$(du -sh "$ICLOUD_TOOLBOX_ENV_DIR" | awk '{print $1}')
-
-      if [ "$TOOLBOX_SIZE" != "$ICLOUD_TOOLBOX_SIZE" ]; then
-        warn "Mismatch in toolbox/env directory size:"
-        info "   Developer/toolbox/private/env size: $TOOLBOX_SIZE"
-        info "   iCloud BAK/toolbox/env size: $ICLOUD_TOOLBOX_SIZE"
-        warn "Reconcile the differences manually. Exiting."
-        exit 1
-      else
-        success "toolbox/private/env size matches iCloud BAK/toolbox/env size ($TOOLBOX_SIZE)."
-      fi
-    else
-      warn "iCloud BAK/toolbox/env directory not found at '$ICLOUD_TOOLBOX_ENV_DIR'. Cannot compare sizes."
+    if [ -n "$differences" ]; then
+      warn "toolbox/private differs from the iCloud backup (< local, > iCloud):"
+      echo "$differences" | grep '^[<>]' | head -20 | sed 's/^/      /'
+      warn "Reconcile the differences manually. Exiting."
+      exit 1
     fi
-    success "toolbox/private folder appears to be set up."
+    success "toolbox/private matches the iCloud backup."
   else
-    if [ ! -d "$ICLOUD_BAK_DIR" ]; then
-        warn "iCloud BAK folder not found at '$ICLOUD_BAK_DIR'. Exiting."
-        exit 1
-    fi
-
     info "The toolbox/private folder is missing. It should be restored from the iCloud backup."
     echo "Run the following command to restore it:"
     echo
-    echo "mkdir -p \"$TOOLBOX_PRIVATE_DIR\""
-    echo "cp -a \"$ICLOUD_BAK_DIR/.\" \"$TOOLBOX_PRIVATE_DIR/\""
+    echo "mkdir -p \"$PRIVATE_DIR\""
+    echo "cp -a \"$ICLOUD_PRIVATE_DIR/.\" \"$PRIVATE_DIR/\""
     echo
     pause "After running the command (or if you want to skip), press Enter to continue the setup script..."
   fi

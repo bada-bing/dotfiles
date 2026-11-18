@@ -15,7 +15,7 @@ Workflow on a new machine:
 
 Runs the following steps in order, pausing for manual confirmation where a step can't be automated. Each step is named by its function, which is the name `--from` and `--to` take.
 
-1. **`restore_private_env`** — checks `~/Developer/toolbox/private/env` is present; if not, prompts to restore it from the iCloud `BAK` backup.
+1. **`restore_private_env`** — checks that `~/Developer/toolbox/private` matches its iCloud backup, `BAK/toolbox/private`, file by file; if the folder is missing, prompts to restore it from there.
 2. **`setup_github_ssh`** — generates an SSH key if none exists, loads it into the keychain, and verifies GitHub SSH access.
 3. **`install_homebrew`** — installs Homebrew (and Xcode CLT) if missing, then installs `stow`, which linking the dotfiles needs.
 4. **`clone_dotfiles`** — clones this repo to `~/Developer/toolbox/dotfiles`, or pulls it when it is already there.
