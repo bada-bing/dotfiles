@@ -39,6 +39,13 @@ would_run() {
   echo -e "  ${C_YELLOW}would run:${C_RESET} ${1}"
 }
 
+# Reports an action as done. A dry run did not do it, and its "would run" line already says so.
+success_if_done() {
+  if [ "$DRY_RUN" != true ]; then
+    success "${1}"
+  fi
+}
+
 prompt() {
   # The space after the prompt is intentional for better readability
   read -p "  _ ${1} " "${@:2}"
@@ -173,7 +180,7 @@ setup_github_ssh() {
     fi
     new_key_generated=true
 
-    success "New SSH key generated."
+    success_if_done "New SSH key generated."
   else
     info "Existing SSH key found at $key_path."
   fi
@@ -204,7 +211,7 @@ setup_github_ssh() {
     else
       pbcopy < "${key_path}.pub"
     fi
-    success "Your new public SSH key has been copied to the clipboard."
+    success_if_done "Your new public SSH key has been copied to the clipboard."
     info "Add key to your GitHub account."
     echo
     print_ssh_key_instructions
@@ -261,7 +268,7 @@ install_homebrew() {
     run brew install stow
   fi
 
-  success "Homebrew setup complete"
+  success_if_done "Homebrew setup complete"
 }
 
 clone_dotfiles() {
@@ -317,7 +324,7 @@ clone_dotfiles() {
     run git clone "$DOTFILES_URL" "$DOTFILES_DIR" || { warn "Failed to clone dotfiles repository."; exit 1; }
   fi
 
-  success "Dotfiles are in $DOTFILES_DIR"
+  success_if_done "Dotfiles are in $DOTFILES_DIR"
 }
 
 set_hostname() {
@@ -363,7 +370,7 @@ set_hostname() {
     run sudo scutil --set ComputerName "$new_hostname"
     run sudo scutil --set HostName "$new_hostname"
     MACHINE="$new_hostname"
-    success "Hostname set to $new_hostname"
+    success_if_done "Hostname set to $new_hostname"
   else
     if [ "$computer_name" = "$local_host_name" ] && [ "$local_host_name" = "$host_name" ]; then
       success "Hostname remains $local_host_name"
@@ -382,7 +389,7 @@ create_xdg_dirs() {
       info "Directory $dir already exists."
     else
       run mkdir -p "$dir"
-      info "Created directory $dir."
+      success_if_done "Created directory $dir."
     fi
   done
 
@@ -424,7 +431,7 @@ link_dotfiles() {
     exit 1
   fi
 
-  success "Dotfiles linked."
+  success_if_done "Dotfiles linked."
 }
 
 install_packages() {
@@ -433,7 +440,7 @@ install_packages() {
   if [ -f "$brewfile" ]; then
     info "Installing the packages in $brewfile"
     run brew bundle --file="$brewfile"
-    success "Homebrew package installation complete"
+    success_if_done "Homebrew package installation complete"
   else
     warn "No Brewfile at $brewfile. Skipping."
   fi
@@ -441,14 +448,14 @@ install_packages() {
 
 set_system_settings() {
   run "$BOOTSTRAP_DIR/set_macos_defaults.sh"
-  success "Finished macOS defaults"
+  success_if_done "Finished macOS defaults"
 
   # Manual System Settings Configuration
   info "Manual Action Required: Configure System Settings"
   info "This applies to settings which cannot be configured via 'defaults' commands."
   pause "Once you are done, press Enter to continue..."
 
-  success "macOS settings applied and manual steps completed"
+  success_if_done "macOS settings applied and manual steps completed"
 }
 
 set_app_settings() {
@@ -461,7 +468,7 @@ set_app_settings() {
   info "  - Apple Notes  (quick capture from any Space)"
   info "  - Reminders  (surface reminders without Space-switching)"
   pause "Once you are done, press Enter to continue..."
-  success "Finished application settings"
+  success_if_done "Finished application settings"
 }
 
 # --- Running the steps ---
