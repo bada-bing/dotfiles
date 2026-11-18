@@ -13,24 +13,15 @@ For instructions on setting up a macOS machine, refer to the [Machine Setup Proc
 
 ---
 
-## Per-Machine Divergence
+## Per-Machine Configuration
 
-> [!NOTE]
-> If a machine needs to diverge from the shared dotfiles (e.g. a simpler Neovim config, no custom
-> statusbar), create a branch for it (e.g. `custom`) and add a `hostname=branch` line to
-> [`_bootstrap/machine-branches.txt`](./_bootstrap/machine-branches.txt) **on `main`** — that's what
-> makes every clone aware of the mapping. During the hostname step, `setup_machine.sh` lists known
-> `name=branch` entries from that file so you can pick one (hostname + branch are set together,
-> automatically) or type a new hostname and, optionally, a one-off branch for it (not written back
-> to the file — add it yourself if you want it remembered for next time). Rebase a machine's branch
-> onto `main` periodically to stay in sync, and delete it (and its mapping line) once the divergence
-> is no longer needed.
+Each machine has a folder of its own at the root, named after its hostname and laid out as its home directory, such as `mini/`. `_bootstrap/setup_machine.sh` links it with `stow -t ~ <machine>`. See [Machine folders in `_bootstrap/README.md`](./_bootstrap/README.md#machine-folders).
 
 ---
 
 ## Symlinking (Stow)
 
-`_bootstrap/setup_machine.sh` runs this automatically. To symlink manually:
+To symlink `.config` and `home` manually:
 
 `cd ~/Developer/toolbox/dotfiles;` ensure you run Stow commands from the `dotfiles` dir
 
