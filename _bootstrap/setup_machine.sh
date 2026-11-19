@@ -432,7 +432,11 @@ set_hostname() {
     new_hostname="${machines[$((new_hostname - 1))]}"
   fi
 
-  if [ -n "$new_hostname" ]; then
+  # Choosing the name the machine already has in all three places changes nothing, so it needs no sudo.
+  if [ -n "$new_hostname" ] && [ "$new_hostname" = "$computer_name" ] && [ "$new_hostname" = "$local_host_name" ] && [ "$new_hostname" = "$host_name" ]; then
+    MACHINE="$new_hostname"
+    success "Hostname is already $new_hostname"
+  elif [ -n "$new_hostname" ]; then
     info "Setting hostname to $new_hostname"
     run sudo scutil --set LocalHostName "$new_hostname"
     run sudo scutil --set ComputerName "$new_hostname"
