@@ -16,6 +16,9 @@ PRIVATE_DIR="$HOME/Developer/toolbox/private"
 ICLOUD_PRIVATE_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/BAK/toolbox/private" # the central copy of PRIVATE_DIR
 SRC_DIR="$HOME/Developer/src" # where clone_repositories clones a machine's repositories
 
+# The user a machine has unless it is set up otherwise. Another one is allowed once confirmed.
+DEFAULT_USER="miki"
+
 # --- State ---
 DRY_RUN=false
 MACHINE="" # the machine's folder in the dotfiles, set by set_hostname
@@ -99,6 +102,29 @@ machine_bootstrap_dir() {
 # The machine's own folder in the private configuration: its SSH config, its mise config.
 machine_private_dir() {
   echo "$PRIVATE_DIR/env/$(machine_name)"
+}
+
+# Warns when the user is not DEFAULT_USER and asks whether to go on, refusing only on no.
+# What was set up by hand against the default home, such as a link of rex, would not match.
+check_user() {
+  local user
+  user=$(whoami)
+  if [ "$user" = "$DEFAULT_USER" ]; then
+    return
+  fi
+
+  warn "The user is '$user', not the default user '$DEFAULT_USER'."
+  info "The script works from \$HOME, but what was set up by hand against /Users/$DEFAULT_USER will not match."
+  if [ "$DRY_RUN" = true ]; then
+    return
+  fi
+
+  prompt "Continue as '$user'? [Y/n]" -n 1 -r REPLY
+  echo
+  if [[ $REPLY =~ ^[Nn]$ ]]; then
+    warn "Exiting."
+    exit 1
+  fi
 }
 
 print_ssh_key_instructions() {
@@ -685,6 +711,8 @@ fi
 if [ "$DRY_RUN" = true ]; then
   header "DRY RUN: nothing on this machine is changed"
 fi
+
+check_user
 
 run_steps
 
