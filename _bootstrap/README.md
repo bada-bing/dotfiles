@@ -13,24 +13,15 @@ Workflow on a new machine:
 
 ## What `setup_machine.sh` does
 
-Runs the following steps in order, pausing for manual confirmation where a step can't be automated. Each step is named by its function, which is the name `--from` and `--to` take.
-
-1. **`restore_private_env`** — checks that `~/Developer/toolbox/private` matches its iCloud backup, `BAK/toolbox/private`, file by file; if the folder is missing, prompts to restore it from there.
-2. **`setup_github_ssh`** — generates an SSH key if none exists, loads it into the keychain, and verifies GitHub SSH access.
-3. **`install_homebrew`** — installs Homebrew (and Xcode CLT) if missing, then installs `stow`, which linking the dotfiles needs.
-4. **`clone_dotfiles`** — clones this repo to `~/Developer/toolbox/dotfiles`, or pulls it when it is already there.
-5. **`set_hostname`** — reconciles `ComputerName`/`LocalHostName`/`HostName` and offers the machines that have a folder in the dotfiles. The hostname names the machine's folder.
-6. **`create_xdg_dirs`** — ensures `~/.config`, `~/.local/share`, `~/.cache` exist, before anything is linked into them.
-7. **`link_dotfiles`** — links the machine's folder into the home directory: `stow --adopt -t ~ <machine>`. A file already in place is taken into the folder, and the step stops if it differed.
-8. **`install_packages`** — runs `brew bundle` against the machine's Brewfile, `<machine>/.config/homebrew/Brewfile`.
-9. **`set_system_settings`** — applies `set_macos_defaults.sh`, then prompts for manual System Settings changes that can't be scripted.
-10. **`set_app_settings`** — prompts for manual per-app settings (documented in RemNote, plus a few noted directly in the script).
+Runs its steps in order, pausing for manual confirmation where a step can't be automated. `setup_machine.sh --list` shows them, in order; each step says what it does as it runs. A step is named by its function, which is the name `--from` and `--to` take.
 
 The whole script is meant to be safe to re-run: each step checks existing state before acting.
 
 ## Machine folders
 
 Each machine has a folder of its own at the root of the dotfiles, named after its hostname and laid out as its home directory: `mini/.zshenv`, `mini/.config/zsh`, `mini/.config/homebrew/Brewfile`. A folder is a complete copy of that machine's configuration, so a change made on one machine stays there until it is copied to another. A folder with a leading underscore is not a machine.
+
+Two more folders belong to each machine: `_bootstrap/<machine>/` holds what only the bootstrap reads (its settings and its list of repositories), and `private/env/<machine>/` holds its private configuration (its SSH config and its mise config).
 
 ## Running part of it
 
