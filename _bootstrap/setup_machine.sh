@@ -95,6 +95,11 @@ machine_bootstrap_dir() {
   echo "$BOOTSTRAP_DIR/$(machine_name)"
 }
 
+# The machine's own folder in the private configuration: its SSH config, its mise config.
+machine_private_dir() {
+  echo "$PRIVATE_DIR/env/$(machine_name)"
+}
+
 print_ssh_key_instructions() {
   info "1. Open your browser and go to https://github.com/settings/keys"
   info "2. Click on 'New SSH key'."
@@ -451,6 +456,32 @@ install_packages() {
   fi
 }
 
+# Installs the tools of the machine's mise config. mise installs a missing tool on demand
+# only in an interactive shell, so the shims that proc, SSH and scripts go through need it done here.
+install_tools() {
+  local mise_dir
+  mise_dir="$(machine_private_dir)/mise"
+
+  if [ ! -f "$mise_dir/config.toml" ]; then
+    warn "No mise config at $mise_dir/config.toml. Skipping."
+    return
+  fi
+
+  if ! command -v mise &> /dev/null; then
+    if [ "$DRY_RUN" = true ]; then
+      info "mise is not installed yet; install_packages installs it from the machine's Brewfile."
+    else
+      warn "mise is not installed. It comes from the machine's Brewfile, through install_packages. Exiting."
+      exit 1
+    fi
+  fi
+
+  # Run from $HOME, so no project's mise.toml joins the machine's config.
+  info "Installing the tools in $mise_dir/config.toml"
+  run env MISE_CONFIG_DIR="$mise_dir" mise install -C "$HOME"
+  success_if_done "Tools installed"
+}
+
 # Applies the machine's macOS defaults, from its bootstrap folder.
 set_system_settings() {
   local script
@@ -494,6 +525,7 @@ STEPS=(
   create_xdg_dirs
   link_dotfiles
   install_packages
+  install_tools
   set_system_settings
   set_app_settings
 )
