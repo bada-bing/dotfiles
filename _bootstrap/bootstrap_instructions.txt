@@ -1,7 +1,8 @@
 # Instructions for bootstrapping your new macOS machine.
 #
 # 1. Make sure the machine has a folder in the dotfiles, named after its hostname (e.g. mini/).
-#    For a new machine, copy the closest folder, trim it, and push it first.
+#    For a new machine, write its folder for it, together with _bootstrap/<machine>/ and
+#    private/env/<machine>/, and push it first.
 # 2. Log in to your Apple ID to enable iCloud Drive.
 # 3. Wait for iCloud Drive to sync this file.
 # 4. Execute the 'Bootstrap Command', and follow the prompts in the Terminal.
