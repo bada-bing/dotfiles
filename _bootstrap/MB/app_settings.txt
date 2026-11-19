@@ -1,0 +1,5 @@
+System Settings that 'defaults' cannot set: configure them by hand.
+Dock → 'All Desktops' (right-click app icon → Options → All Desktops):
+  - KeePassXC  (keeps it accessible from any Space; fixes auto-type across Spaces)
+  - Apple Notes  (quick capture from any Space)
+  - Reminders  (surface reminders without Space-switching)

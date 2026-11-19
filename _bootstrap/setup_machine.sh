@@ -90,6 +90,11 @@ list_machine_folders() {
   done
 }
 
+# What the bootstrap reads for this machine alone: its settings and its list of repositories.
+machine_bootstrap_dir() {
+  echo "$BOOTSTRAP_DIR/$(machine_name)"
+}
+
 print_ssh_key_instructions() {
   info "1. Open your browser and go to https://github.com/settings/keys"
   info "2. Click on 'New SSH key'."
@@ -446,27 +451,33 @@ install_packages() {
   fi
 }
 
+# Applies the machine's macOS defaults, from its bootstrap folder.
 set_system_settings() {
-  run "$BOOTSTRAP_DIR/set_macos_defaults.sh"
+  local script
+  script="$(machine_bootstrap_dir)/macos_defaults.sh"
+
+  if [ ! -f "$script" ]; then
+    warn "No macOS defaults at $script. Skipping."
+    return
+  fi
+
+  info "Applying $script"
+  run /bin/bash "$script"
   success_if_done "Finished macOS defaults"
-
-  # Manual System Settings Configuration
-  info "Manual Action Required: Configure System Settings"
-  info "This applies to settings which cannot be configured via 'defaults' commands."
-  pause "Once you are done, press Enter to continue..."
-
-  success_if_done "macOS settings applied and manual steps completed"
 }
 
+# Shows the application settings the machine asks for by hand, from its bootstrap folder.
 set_app_settings() {
+  local file
+  file="$(machine_bootstrap_dir)/app_settings.txt"
+
+  if [ ! -s "$file" ]; then
+    info "The machine '$(machine_name)' asks for no application settings."
+    return
+  fi
+
   info "Manual Action Required: Configure Application Settings"
-  info "Search for 'Application Settings' in RemNote for the details."
-  info ""
-  # TODO: move these instructions to RemNote under "Application Settings"
-  info "Dock → 'All Desktops' (right-click app icon → Options → All Desktops):"
-  info "  - KeePassXC  (keeps it accessible from any Space; fixes auto-type across Spaces)"
-  info "  - Apple Notes  (quick capture from any Space)"
-  info "  - Reminders  (surface reminders without Space-switching)"
+  sed 's/^/    /' "$file"
   pause "Once you are done, press Enter to continue..."
   success_if_done "Finished application settings"
 }
