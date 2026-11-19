@@ -510,7 +510,7 @@ install_brew_packages() {
   local brewfile="$DOTFILES_DIR/$(machine_name)/.config/homebrew/Brewfile"
 
   if [ -f "$brewfile" ]; then
-    info "Installing the packages in $brewfile"
+    info "Installing the packages listed in $brewfile"
     run brew bundle --file="$brewfile"
     success_if_done "Homebrew package installation complete"
   else
@@ -539,7 +539,7 @@ install_mise_tools() {
   fi
 
   # Run from $HOME, so no project's mise.toml joins the machine's config.
-  info "Installing the tools in $mise_dir/config.toml"
+  info "Installing the tools listed in $mise_dir/config.toml"
   run env MISE_CONFIG_DIR="$mise_dir" mise install -C "$HOME"
   success_if_done "Tools installed"
 }
