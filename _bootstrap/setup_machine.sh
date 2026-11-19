@@ -165,20 +165,13 @@ restore_private_env() {
 }
 
 # Links the machine's SSH config and makes sure the machine has its one key, id_ed25519.
-# The key reaches everything the machine reaches; the machine is named in its comment
-# and in its title on GitHub, where it is added by hand.
-setup_github_ssh() {
+# The key reaches everything the machine connects to, and its comment names the machine.
+setup_ssh() {
   local machine
   machine=$(machine_name)
   local key_path="$HOME/.ssh/id_ed25519"
   local ssh_config
   ssh_config="$(machine_private_dir)/ssh/config"
-
-  # The passphrase is kept in the login keychain, which a command run over plain SSH cannot read.
-  if [ -n "${SSH_CONNECTION:-}" ] && [ "$DRY_RUN" != true ]; then
-    warn "This step runs in the session of the user: in a tab of Rex, or at the machine. Over plain SSH the keychain cannot be read. Exiting."
-    exit 1
-  fi
 
   if [ ! -f "$ssh_config" ]; then
     warn "The machine '$machine' has no SSH config at $ssh_config."
@@ -222,43 +215,66 @@ setup_github_ssh() {
       warn "Its comment is not '$comment', so it was not made by this step."
       info "To replace it, remove it from GitHub and from the authorized_keys of other machines, delete $key_path and $key_path.pub, then re-run this step."
     fi
-    info "If it is not on GitHub yet, add $key_path.pub at https://github.com/settings/ssh/new with the title '$machine'."
-  else
-    info "Generating the key of the machine, $key_path, with the comment '$comment'."
+    return
+  fi
 
-    if [ "$DRY_RUN" = true ]; then
-      run ssh-keygen -t ed25519 -C "$comment" -f "$key_path" -N "<passphrase>"
-    else
-      local passphrase="" passphrase_confirm=""
-      while true; do
-        prompt_secret "Enter a passphrase for the key:" passphrase
-        echo
-        if [ -z "$passphrase" ]; then
-          warn "The key has a passphrase. Please enter one."
-          continue
-        fi
-        prompt_secret "Confirm the passphrase:" passphrase_confirm
-        echo
-        if [ "$passphrase" = "$passphrase_confirm" ]; then
-          break
-        fi
-        warn "The passphrases do not match. Please try again."
-      done
-      ssh-keygen -t ed25519 -C "$comment" -f "$key_path" -N "$passphrase"
-      success "Generated $key_path."
+  info "Generating the key of the machine, $key_path, with the comment '$comment'."
+  if [ "$DRY_RUN" = true ]; then
+    run ssh-keygen -t ed25519 -C "$comment" -f "$key_path" -N "<passphrase>"
+    return
+  fi
 
-      # Printed as well as copied: in a tab of Rex the clipboard is the machine's, not the one in front of you.
-      pbcopy < "$key_path.pub"
-      info "Add the key to GitHub. It is on the clipboard of this machine, and here:"
-      echo
-      echo "    $(cat "$key_path.pub")"
-      echo
-      info "1. Open https://github.com/settings/ssh/new"
-      info "2. Title: $machine"
-      info "3. Key: paste the line above"
-      info "4. Click 'Add SSH key'"
-      pause "Press Enter once the key is on GitHub."
+  local passphrase="" passphrase_confirm=""
+  while true; do
+    prompt_secret "Enter a passphrase for the key:" passphrase
+    echo
+    if [ -z "$passphrase" ]; then
+      warn "The key has a passphrase. Please enter one."
+      continue
     fi
+    prompt_secret "Confirm the passphrase:" passphrase_confirm
+    echo
+    if [ "$passphrase" = "$passphrase_confirm" ]; then
+      break
+    fi
+    warn "The passphrases do not match. Please try again."
+  done
+  ssh-keygen -t ed25519 -C "$comment" -f "$key_path" -N "$passphrase"
+  success "Generated $key_path."
+}
+
+# Prints whether GitHub accepts the machine's key. IdentitiesOnly offers this key alone,
+# so a forwarded agent cannot make the check pass with another machine's key.
+github_accepts_key() {
+  local host_key_checking="$1"
+  ssh -o StrictHostKeyChecking="$host_key_checking" -o IdentitiesOnly=yes -i "$HOME/.ssh/id_ed25519" \
+    -T git@github.com < /dev/null 2>&1 | grep -q "successfully authenticated"
+}
+
+# Checks that GitHub accepts the machine's key, and shows how to add it there when it does not.
+connect_github() {
+  local machine
+  machine=$(machine_name)
+  local key_path="$HOME/.ssh/id_ed25519"
+
+  if [ ! -f "$key_path" ]; then
+    if [ "$DRY_RUN" = true ]; then
+      info "The machine has no key yet; setup_ssh generates it."
+      return
+    fi
+    warn "The machine has no key at $key_path. Run the step setup_ssh first. Exiting."
+    exit 1
+  fi
+
+  # The first use asks for the passphrase, which the keychain keeps from then on.
+  # Over plain SSH the keychain is out of reach, so the check could not tell a missing key from a locked one.
+  if [ -n "${SSH_CONNECTION:-}" ]; then
+    if [ "$DRY_RUN" = true ]; then
+      info "Over plain SSH the keychain cannot be read, so the connection to GitHub is not checked."
+      return
+    fi
+    warn "This step runs in the session of the user: in a tab of Rex, or at the machine. Over plain SSH the keychain cannot be read. Exiting."
+    exit 1
   fi
 
   # accept-new adds GitHub's host key to known_hosts; a dry run only checks against the keys already known.
@@ -267,10 +283,30 @@ setup_github_ssh() {
     host_key_checking="yes"
   fi
 
-  # The first use asks for the passphrase once; UseKeychain in the SSH config keeps it in the keychain.
-  # IdentitiesOnly checks this machine's key alone: a forwarded agent would offer another machine's key.
   info "Checking the connection to GitHub with $key_path..."
-  if ssh -o StrictHostKeyChecking="$host_key_checking" -o IdentitiesOnly=yes -i "$key_path" -T git@github.com < /dev/null 2>&1 | grep -q "successfully authenticated"; then
+  if github_accepts_key "$host_key_checking"; then
+    success "Connected to GitHub over SSH."
+    return
+  fi
+
+  if [ "$DRY_RUN" = true ]; then
+    info "GitHub does not accept the key yet; a real run shows how to add it."
+    return
+  fi
+
+  # Printed as well as copied: in a tab of Rex the clipboard is the machine's, not the one in front of you.
+  pbcopy < "$key_path.pub"
+  info "GitHub does not accept the key yet. Add it: it is on the clipboard of this machine, and here:"
+  echo
+  echo "    $(cat "$key_path.pub")"
+  echo
+  info "1. Open https://github.com/settings/ssh/new"
+  info "2. Title: $machine"
+  info "3. Key: paste the line above"
+  info "4. Click 'Add SSH key'"
+  pause "Press Enter once the key is on GitHub."
+
+  if github_accepts_key "$host_key_checking"; then
     success "Connected to GitHub over SSH."
   else
     warn "Could not connect to GitHub over SSH. A private repository cannot be cloned until it does."
@@ -580,13 +616,14 @@ set_app_settings() {
 # --- Running the steps ---
 
 # The steps, in the order they run. Each is the function of that name.
-# setup_github_ssh comes after set_hostname, since the key's comment and title name the machine.
+# setup_ssh and connect_github come after set_hostname, since the key's comment and title name the machine.
 STEPS=(
   restore_private_env # pull private files from icloud (e.g., git configuration)
   install_homebrew
   clone_dotfiles
   set_hostname
-  setup_github_ssh
+  setup_ssh
+  connect_github
   create_xdg_dirs
   link_dotfiles
   install_packages
