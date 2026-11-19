@@ -1,0 +1,4 @@
+# The repositories clone_repositories clones into ~/Developer/src, one per line:
+# <owner>/<name> [command that installs it, run in the clone right after it is cloned]
+bada-bing/process_management_in_tmux  mkdir -p ~/.local/bin && go build -o ~/.local/bin/proc .
+bada-bing/soa

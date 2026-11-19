@@ -14,6 +14,7 @@ DOTFILES_DIR="$HOME/Developer/toolbox/dotfiles"
 BOOTSTRAP_DIR="$DOTFILES_DIR/_bootstrap"
 PRIVATE_DIR="$HOME/Developer/toolbox/private"
 ICLOUD_PRIVATE_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/BAK/toolbox/private" # the central copy of PRIVATE_DIR
+SRC_DIR="$HOME/Developer/src" # where clone_repositories clones a machine's repositories
 
 # --- State ---
 DRY_RUN=false
@@ -482,6 +483,48 @@ install_tools() {
   success_if_done "Tools installed"
 }
 
+# Clones the machine's repositories into SRC_DIR, from the list in its bootstrap folder:
+# one "<owner>/<name> [install command]" per line. A repository already there is left alone,
+# and its install command runs only right after it is cloned, so a second run changes nothing.
+clone_repositories() {
+  local list
+  list="$(machine_bootstrap_dir)/repositories"
+
+  if [ ! -f "$list" ]; then
+    warn "No list of repositories at $list. Skipping."
+    return
+  fi
+
+  if [ ! -d "$SRC_DIR" ]; then
+    run mkdir -p "$SRC_DIR"
+  fi
+
+  local mise_dir
+  mise_dir="$(machine_private_dir)/mise"
+
+  local repo command dir
+  # Read from fd 3, so git and ssh keep the terminal for a passphrase.
+  while read -r repo command <&3; do
+    [[ -z "$repo" || "$repo" == \#* ]] && continue
+    dir="$SRC_DIR/$(basename "$repo")"
+
+    if [ -d "$dir" ]; then
+      info "$repo is already in $dir"
+      continue
+    fi
+
+    info "Cloning $repo into $dir"
+    run git clone "git@github.com:$repo.git" "$dir"
+
+    if [ -n "$command" ]; then
+      info "Installing $repo: $command"
+      # mise exec puts the tools of the machine's mise config on the PATH, such as Go for a build.
+      run env MISE_CONFIG_DIR="$mise_dir" mise exec -C "$dir" -- bash -c "$command"
+    fi
+    success_if_done "Cloned $repo"
+  done 3< "$list"
+}
+
 # Applies the machine's macOS defaults, from its bootstrap folder.
 set_system_settings() {
   local script
@@ -526,6 +569,7 @@ STEPS=(
   link_dotfiles
   install_packages
   install_tools
+  clone_repositories
   set_system_settings
   set_app_settings
 )
