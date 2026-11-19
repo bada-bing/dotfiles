@@ -1,4 +1,5 @@
 brew "gh"
+brew "mise"
 brew "openssl@3"
 brew "tmux"
 brew "wget"
