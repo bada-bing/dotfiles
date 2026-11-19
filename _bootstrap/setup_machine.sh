@@ -506,7 +506,7 @@ link_dotfiles() {
   success_if_done "Dotfiles linked."
 }
 
-install_packages() {
+install_brew_packages() {
   local brewfile="$DOTFILES_DIR/$(machine_name)/.config/homebrew/Brewfile"
 
   if [ -f "$brewfile" ]; then
@@ -520,7 +520,7 @@ install_packages() {
 
 # Installs the tools of the machine's mise config. mise installs a missing tool on demand
 # only in an interactive shell, so the shims that proc, SSH and scripts go through need it done here.
-install_tools() {
+install_mise_tools() {
   local mise_dir
   mise_dir="$(machine_private_dir)/mise"
 
@@ -531,9 +531,9 @@ install_tools() {
 
   if ! command -v mise &> /dev/null; then
     if [ "$DRY_RUN" = true ]; then
-      info "mise is not installed yet; install_packages installs it from the machine's Brewfile."
+      info "mise is not installed yet; install_brew_packages installs it from the machine's Brewfile."
     else
-      warn "mise is not installed. It comes from the machine's Brewfile, through install_packages. Exiting."
+      warn "mise is not installed. It comes from the machine's Brewfile, through install_brew_packages. Exiting."
       exit 1
     fi
   fi
@@ -630,8 +630,8 @@ STEPS=(
   connect_github
   create_xdg_dirs
   link_dotfiles
-  install_packages
-  install_tools
+  install_brew_packages
+  install_mise_tools
   clone_repositories
   set_system_settings
   set_app_settings
