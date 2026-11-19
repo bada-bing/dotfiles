@@ -21,7 +21,7 @@ The whole script is meant to be safe to re-run: each step checks existing state 
 
 Each machine has a folder of its own at the root of the dotfiles, named after its hostname and laid out as its home directory: `mini/.zshenv`, `mini/.config/zsh`, `mini/.config/homebrew/Brewfile`. A folder is a complete copy of that machine's configuration, so a change made on one machine stays there until it is copied to another. A folder with a leading underscore is not a machine.
 
-Two more folders belong to each machine: `_bootstrap/<machine>/` holds what only the bootstrap reads (its settings and its list of repositories), and `private/env/<machine>/` holds its private configuration (its SSH config and its mise config).
+Two more folders belong to each machine: `_bootstrap/<machine>/` holds what only the bootstrap reads (its settings), and `private/env/<machine>/` holds its private configuration (its SSH config, its mise config and the repositories it clones).
 
 ## Running part of it
 

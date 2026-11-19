@@ -94,12 +94,12 @@ list_machine_folders() {
   done
 }
 
-# What the bootstrap reads for this machine alone: its settings and its list of repositories.
+# What the bootstrap reads for this machine alone: its settings.
 machine_bootstrap_dir() {
   echo "$BOOTSTRAP_DIR/$(machine_name)"
 }
 
-# The machine's own folder in the private configuration: its SSH config, its mise config.
+# The machine's own folder in the private configuration: its SSH config, its mise config, its repositories.
 machine_private_dir() {
   echo "$PRIVATE_DIR/env/$(machine_name)"
 }
@@ -544,12 +544,13 @@ install_mise_tools() {
   success_if_done "Tools installed"
 }
 
-# Clones the machine's repositories into SRC_DIR, from the list in its bootstrap folder:
+# Clones the machine's repositories into SRC_DIR, from the list in its private folder,
+# private since not every repository is public:
 # one "<owner>/<name> [install command]" per line. A repository already there is left alone,
 # and its install command runs only right after it is cloned, so a second run changes nothing.
 clone_repositories() {
   local list
-  list="$(machine_bootstrap_dir)/repositories"
+  list="$(machine_private_dir)/repositories"
 
   if [ ! -f "$list" ]; then
     warn "No list of repositories at $list. Skipping."
